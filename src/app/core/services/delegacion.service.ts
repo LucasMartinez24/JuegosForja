@@ -61,4 +61,10 @@ export class DelegacionService {
   eliminarJugador(id: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/eliminar-jugador/${id}`);
   }
+  descargarReporte(tipo: string, valor: any): Observable<Blob> {
+    // responseType: 'blob' es CRÍTICO para descargar archivos
+    return this.http.get(`http://localhost:3000/api/reportes/generar?tipo=${tipo}&valor=${valor}`, {
+      responseType: 'blob',
+    });
+  }
 }

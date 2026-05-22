@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { toast } from 'ngx-sonner';
 import { AdminService } from '../../../core/services/admin.service';
 import { CommonModule } from '@angular/common';
+import { DelegacionService } from '../../../core/services/delegacion.service';
 
 @Component({
   selector: 'app-dashboard-admin-component',
@@ -27,6 +28,7 @@ export class DashboardAdminComponent implements OnInit {
     private adminService: AdminService,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private delegacionService: DelegacionService,
   ) {
     this.serverUrl = this.adminService.serverUrl;
   }
@@ -49,7 +51,29 @@ export class DashboardAdminComponent implements OnInit {
       },
     });
   }
+  descargarReporte(tipo: string, valor: any): void {
+    // 1. Validación de seguridad (aquí evitamos el 'undefined')
+    const idValido = valor ?? (valor?.id || valor?.idDisciplina);
 
+    if (!idValido) {
+      console.error('ID no encontrado en el objeto:', valor);
+      return;
+    }
+
+    this.delegacionService.descargarReporte(tipo, idValido).subscribe({
+      next: (blob) => this.forzarDescarga(blob, `Reporte_${tipo}_${idValido}.xlsx`),
+      error: () => toast.error('Error al generar el archivo'),
+    });
+  }
+
+  private forzarDescarga(blob: Blob, nombre: string) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
   toggleDisciplina(discNombre: string): void {
     this.disciplinasExpandidas[discNombre] = !this.disciplinasExpandidas[discNombre];
     this.cdr.detectChanges();
