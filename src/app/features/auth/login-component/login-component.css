@@ -1,0 +1,14 @@
+/* src/app/features/auth/login.component.css */
+
+.editorial-premium-shadow {
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+}
+
+.form-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.form-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #F85733;
+  border-radius: 9999px;
+}

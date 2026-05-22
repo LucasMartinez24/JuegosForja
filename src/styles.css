@@ -1,3 +1,43 @@
-/* You can add global styles to this file, and also import other style files */
+/* src/styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
+/* src/styles.css */
 @import "tailwindcss";
+
+@theme {
+  /* Paleta Oficial Juegos FORJA */
+  --color-forja-azul: #13304D;
+  /* Azul Negro institucional */
+  --color-forja-naranja: #F85733;
+  /* Naranja enérgico */
+  --color-forja-ocre: #DE9C4E;
+  /* Ocre secundario */
+
+  /* Variantes Premium Dark */
+  --color-forja-dark-bg: #081420;
+  /* Fondo absoluto ultra oscuro */
+  --color-forja-dark-card: #0F253B;
+  /* Superficie de tarjeta translúcida */
+  --color-forja-dark-input: #0A1929;
+  /* Fondo de los campos de texto */
+
+  /* Tipografía Editorial */
+  --font-epilogue: 'Epilogue', sans-serif;
+}
+
+/* Sombra avanzada con profundidad */
+.editorial-premium-shadow {
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+}
+
+/* Personalización del scroll interno sutil */
+.form-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.form-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #F85733;
+  /* Naranja */
+  border-radius: 9999px;
+}

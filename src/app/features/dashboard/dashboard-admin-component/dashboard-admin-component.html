@@ -1,0 +1,228 @@
+<div
+  class="min-h-screen bg-forja-dark-bg font-epilogue text-gray-200 p-4 md:p-8 relative overflow-hidden flex flex-col justify-between">
+
+  <div
+    class="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-naranja/5 blur-[140px] pointer-events-none">
+  </div>
+  <div
+    class="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-azul/5 blur-[140px] pointer-events-none">
+  </div>
+
+  <div class="w-full max-w-[1200px] mx-auto flex-1">
+
+    <header
+      class="bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-row justify-between items-center gap-4 shadow-xl mb-6">
+      <div class="flex items-center gap-4">
+        <img src="/img/logo.png" alt="Logo Juegos Forja"
+          class="h-24 lg:h-32 w-auto object-contain drop-shadow-[0_8px_24px_rgba(248,87,51,0.25)] transition-transform duration-300 hover:scale-105" />
+        <div>
+          <span class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">Auditoría</span>
+          <h1 class="text-xl font-black text-white tracking-wide">SECRETARIA DE DEPORTES DE JUJUY</h1>
+        </div>
+      </div>
+      <button (click)="logout()" type="button"
+        class="p-3 bg-white/[0.02] hover:bg-red-500/10 border border-white/10 text-gray-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2">
+        Cerrar Control <span class="material-symbols-outlined text-sm">logout</span>
+      </button>
+    </header>
+
+    <div class="flex flex-col items-center justify-center py-24 space-y-4" *ngIf="cargando">
+      <div class="h-10 w-10 border-4 border-forja-naranja border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-xs uppercase tracking-widest font-bold text-gray-500">Mapeando y ordenando disciplinas de la
+        provincia...</p>
+    </div>
+
+    <div class="space-y-4" *ngIf="!cargando">
+
+      <div class="bg-forja-dark-card/20 border border-white/5 rounded-2xl overflow-hidden shadow-md"
+        *ngFor="let disc of disciplinas">
+
+        <div (click)="toggleDisciplina(disc.nombreDisciplina)"
+          class="px-6 py-4.5 bg-white/[0.02] hover:bg-white/[0.04] flex justify-between items-center cursor-pointer select-none border-b border-white/5 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-gray-400 transition-transform duration-200"
+              [class.rotate-90]="disciplinasExpandidas[disc.nombreDisciplina]">keyboard_arrow_right</span>
+            <span class="material-symbols-outlined text-forja-naranja text-xl">emoji_events</span>
+            <h3 class="text-sm font-black text-white tracking-wide uppercase">{{ disc.nombreDisciplina }}</h3>
+          </div>
+          <div class="flex items-center gap-3">
+            <span
+              class="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full font-black tracking-wider uppercase animate-pulse"
+              *ngIf="disc.totalPendientes > 0">
+              {{ disc.totalPendientes }} Por Validar
+            </span>
+            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{{ disc.totalAtletas }}
+              Totales</span>
+          </div>
+        </div>
+
+        <div class="p-4 space-y-3 bg-black/10 animate-fade-in" *ngIf="disciplinasExpandidas[disc.nombreDisciplina]">
+
+          <div class="border border-white/5 rounded-xl bg-forja-dark-card/40 overflow-hidden shadow-inner"
+            *ngFor="let mun of disc.municipios">
+
+            <div (click)="toggleMunicipio(disc.nombreDisciplina + mun.nombreMunicipio)"
+              class="px-5 py-3 bg-white/[0.01] hover:bg-white/[0.03] flex justify-between items-center cursor-pointer select-none transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-xs text-gray-600 transition-transform duration-200"
+                  [class.rotate-90]="municipiosExpandidos[disc.nombreDisciplina + mun.nombreMunicipio]">keyboard_arrow_right</span>
+                <span class="material-symbols-outlined text-forja-ocre text-md">location_city</span>
+                <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wide">{{ mun.nombreMunicipio }}</h4>
+              </div>
+              <span class="text-[10px] text-gray-500 font-medium tracking-wider uppercase">{{ mun.equipos.length }}
+                Delegación/es</span>
+            </div>
+
+            <div class="border-t border-white/5 bg-black/20 divide-y divide-white/5 animate-fade-in"
+              *ngIf="municipiosExpandidos[disc.nombreDisciplina + mun.nombreMunicipio]">
+              <div class="p-4 space-y-3" *ngFor="let eq of mun.equipos">
+
+                <div
+                  class="flex justify-between items-center bg-white/[0.01] px-4 py-3 rounded-xl border border-white/5 shadow-inner">
+                  <span
+                    class="text-[11px] font-black text-forja-naranja uppercase tracking-wider flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">shield</span> Entidad: {{ eq.nombreEquipo }}
+                  </span>
+                  <span
+                    class="text-[10px] bg-slate-800 text-gray-400 border border-white/5 px-2 py-0.5 rounded font-bold uppercase">
+                    {{ eq.atletas.length }} Atletas Cargados
+                  </span>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-white/5 shadow-md">
+                  <table class="w-full text-left text-xs text-gray-300 border-collapse">
+                    <thead>
+                      <tr
+                        class="bg-forja-dark-input/60 border-b border-white/5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                        <th class="p-4">Deportista</th>
+                        <th class="p-4">DNI</th>
+                        <th class="p-4">Modalidad Asignada</th>
+                        <th class="p-4 text-center">Estado Auditoría</th>
+                        <th class="p-4 text-right">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5 bg-forja-dark-card/10">
+                      <tr class="hover:bg-white/[0.01] transition-colors" *ngFor="let atleta of eq.atletas">
+                        <td class="p-4 font-bold text-white uppercase tracking-wide">{{ atleta.apellido }}, {{
+                          atleta.nombre }}</td>
+                        <td class="p-4 font-mono text-gray-400 text-[11px]">DNI {{ atleta.dni }}</td>
+                        <td
+                          class="p-4 font-bold text-forja-ocre tracking-wide uppercase text-[10px] max-w-[200px] truncate">
+                          {{ atleta.prueba?.nombrePrueba }}
+                        </td>
+                        <td class="p-4 text-center">
+                          <span
+                            [class]="atleta.estado === 'APROBADO' ? 'bg-green-500/10 text-green-400 border-green-500/20' : atleta.estado === 'RECHAZADO' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'"
+                            class="px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase border">
+                            {{ atleta.estado || 'PENDIENTE' }}
+                          </span>
+                        </td>
+                        <td class="p-4 text-right">
+                          <button (click)="abrirAuditoria(atleta)" type="button"
+                            class="px-3 py-1.5 bg-forja-naranja hover:bg-orange-600 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg shadow-md transition-all cursor-pointer flex items-center gap-1 ml-auto">
+                            <span class="material-symbols-outlined text-xs">visibility</span> Evaluar Ficha
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div
+    class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in"
+    *ngIf="mostrarModalAuditoria">
+    <div
+      class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-[480px] p-6 space-y-6 shadow-2xl overflow-hidden relative">
+
+      <header class="flex justify-between items-start border-b border-white/5 pb-3">
+        <div>
+          <span class="text-[9px] font-black text-forja-naranja uppercase tracking-widest">Dictamen Ministerial
+            Central</span>
+          <h3 class="text-md font-black text-white uppercase tracking-wide mt-0.5">
+            {{ atletaSeleccionado?.apellido }}, {{ atletaSeleccionado?.nombre }}
+          </h3>
+          <p class="text-[11px] text-gray-400 mt-0.5 font-mono">Documento único: {{ atletaSeleccionado?.dni }}</p>
+        </div>
+        <button (click)="cerrarAuditoria()" type="button"
+          class="text-gray-500 hover:text-white transition-colors cursor-pointer p-1">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </header>
+
+      <div class="space-y-3">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Auditar Documentación en Nueva Pestaña
+        </p>
+
+        <div class="grid grid-cols-1 gap-2.5">
+          <a [href]="serverUrl + atletaSeleccionado?.urlDniFrente" target="_blank"
+            class="w-full px-4 py-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-forja-naranja rounded-xl text-xs text-gray-200 hover:text-white font-bold transition-all flex items-center justify-between group shadow-inner">
+            <span class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-forja-naranja text-md">badge</span>
+              <span>DNI - Certificado Frente</span>
+            </span>
+            <span
+              class="material-symbols-outlined text-xs text-gray-500 group-hover:text-white transition-colors">open_in_new</span>
+          </a>
+
+          <a [href]="serverUrl + atletaSeleccionado?.urlDniDorso" target="_blank"
+            class="w-full px-4 py-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-forja-naranja rounded-xl text-xs text-gray-200 hover:text-white font-bold transition-all flex items-center justify-between group shadow-inner">
+            <span class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-forja-naranja text-md">badge</span>
+              <span>DNI - Certificado Reverso</span>
+            </span>
+            <span
+              class="material-symbols-outlined text-xs text-gray-500 group-hover:text-white transition-colors">open_in_new</span>
+          </a>
+
+          <a [href]="serverUrl + atletaSeleccionado?.urlFichaMedica" target="_blank"
+            class="w-full px-4 py-3 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500 rounded-xl text-xs text-emerald-400 hover:text-emerald-300 font-bold transition-all flex items-center justify-between group shadow-inner">
+            <span class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-400 text-md">medical_services</span>
+              <span>Ficha Médica Colectiva (PDF)</span>
+            </span>
+            <span
+              class="material-symbols-outlined text-xs text-emerald-500 group-hover:text-emerald-300 transition-colors">open_in_new</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-slate-950/40 border border-white/5 p-3 rounded-xl flex justify-between items-center text-xs">
+        <span class="text-gray-500 font-bold uppercase tracking-wider text-[10px]">Estado Habilitación:</span>
+        <span
+          [class]="atletaSeleccionado?.estado === 'APROBADO' ? 'text-green-400' : atletaSeleccionado?.estado === 'RECHAZADO' ? 'text-red-400' : 'text-amber-400'"
+          class="font-black uppercase tracking-widest">
+          {{ atletaSeleccionado?.estado || 'PENDIENTE' }}
+        </span>
+      </div>
+
+      <footer class="flex items-center gap-3 border-t border-white/5 pt-4">
+        <button [disabled]="procesandoDictamen" (click)="ejecutarDictamen('RECHAZADO')" type="button"
+          class="flex-1 py-3 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+          RECHAZAR
+        </button>
+        <button [disabled]="procesandoDictamen" (click)="ejecutarDictamen('APROBADO')" type="button"
+          class="flex-1 py-3 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider shadow-lg transition-all cursor-pointer shadow-green-950/20">
+          HABILITAR ATLETA
+        </button>
+      </footer>
+
+    </div>
+  </div>
+
+  <footer
+    class="mt-4 flex flex-col sm:flex-row justify-between items-center text-[10px] font-bold uppercase tracking-widest text-gray-600 select-none border-t border-white/5 pt-4">
+    <span>© 2026 JUEGOS FORJA - REC Technologies</span>
+    <span class="text-forja-ocre">SECRETARIA DE DEPORTES DE JUJUY</span>
+  </footer>
+</div>

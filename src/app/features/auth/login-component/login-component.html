@@ -1,0 +1,217 @@
+<div
+  class="min-h-screen bg-forja-dark-bg font-epilogue text-gray-200 flex items-center justify-center p-0 md:p-6 selection:bg-forja-naranja selection:text-white transition-colors duration-300 relative overflow-hidden">
+
+  <div
+    class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-azul/20 blur-[120px] pointer-events-none">
+  </div>
+  <div
+    class="absolute bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-forja-naranja/10 blur-[150px] pointer-events-none">
+  </div>
+
+  <main
+    class="w-full max-w-[1200px] bg-forja-dark-card/40 backdrop-blur-xl rounded-2xl overflow-hidden editorial-premium-shadow flex flex-col md:flex-row min-h-[750px] border border-white/5 relative z-10 m-4 md:m-0">
+
+    <section
+      class="md:w-5/12 relative bg-forja-azul flex flex-col justify-between p-8 md:p-12 text-white overflow-hidden min-h-[420px] md:min-h-auto border-b md:border-b-0 md:border-r border-white/5">
+
+      <div class="absolute inset-0 z-0 select-none pointer-events-none">
+        <img alt="Athletes in action" class="w-full h-full object-cover opacity-35 mix-blend-overlay scale-105"
+          src="/img/Deportista.webp" />
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-forja-dark-bg via-forja-azul/40 to-forja-dark-bg/60 opacity-100">
+        </div>
+      </div>
+
+      <div class="relative z-10 flex justify-center md:justify-start">
+        <img src="/img/logo.png" alt="Logo Juegos Forja"
+          class="h-24 lg:h-32 w-auto object-contain drop-shadow-[0_8px_24px_rgba(248,87,51,0.25)] transition-transform duration-300 hover:scale-105" />
+      </div>
+
+      <div class="relative z-10 space-y-4 mt-8 md:mt-0 text-center md:text-left">
+        <h1 class="text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-md">
+          Forjando el futuro <br class="hidden lg:inline" />del deporte
+        </h1>
+        <div class="h-[3px] w-12 bg-forja-naranja rounded-full mx-auto md:mx-0"></div>
+      </div>
+    </section>
+
+    <section class="md:w-7/12 flex flex-col bg-forja-dark-card/70 p-8 md:p-16 justify-center relative">
+
+      <div
+        class="grid grid-cols-2 p-1 bg-forja-dark-input border border-white/5 rounded-xl mb-8 max-w-[360px] w-full mx-auto md:mx-0">
+        <button (click)="cambiarPestana('login')"
+          [class]="pestanaActiva === 'login' ? 'bg-forja-naranja text-white font-bold shadow-md shadow-forja-naranja/10' : 'text-gray-400 hover:text-white font-medium'"
+          class="py-2.5 text-xs uppercase tracking-wider rounded-lg transition-all duration-300 cursor-pointer text-center">
+          Iniciar Sesión
+        </button>
+        <button (click)="cambiarPestana('registro')"
+          [class]="pestanaActiva === 'registro' ? 'bg-forja-naranja text-white font-bold shadow-md shadow-forja-naranja/10' : 'text-gray-400 hover:text-white font-medium'"
+          class="py-2.5 text-xs uppercase tracking-wider rounded-lg transition-all duration-300 cursor-pointer text-center">
+          Registrarse
+        </button>
+      </div>
+
+      <div class="relative min-h-[460px] overflow-hidden pr-1">
+
+        <div
+          [class]="pestanaActiva === 'login' ? 'opacity-100 translate-x-0 pointer-events-auto relative z-10' : 'opacity-0 -translate-x-8 pointer-events-none absolute z-0'"
+          class="w-full space-y-6 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
+
+          <header>
+            <h2 class="text-2xl font-black text-white tracking-wide">Ingreso General</h2>
+            <p class="text-forja-ocre text-xs mt-1 font-medium">Cargue sus credenciales asignadas para administrar o
+              inscribir.</p>
+          </header>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" class="space-y-5">
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-forja-ocre">mail</span>
+                Correo Electrónico
+              </label>
+              <input formControlName="email" type="email"
+                class="w-full px-4 py-3.5 bg-forja-dark-input/60 border border-white/10 focus:border-forja-naranja focus:ring-1 focus:ring-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600 shadow-inner"
+                placeholder="usuario@correo.com" />
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-forja-ocre">lock</span>
+                Contraseña
+              </label>
+              <input formControlName="password" type="password"
+                class="w-full px-4 py-3.5 bg-forja-dark-input/60 border border-white/10 focus:border-forja-naranja focus:ring-1 focus:ring-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600 shadow-inner"
+                placeholder="••••••••" />
+            </div>
+
+            <button [disabled]="loginForm.invalid || cargando" type="submit"
+              class="w-full py-4 bg-gradient-to-r from-forja-naranja to-orange-600 hover:from-orange-600 hover:to-red-600 disabled:from-forja-azul/40 disabled:to-forja-azul/40 disabled:text-gray-500 text-white font-bold rounded-xl shadow-lg shadow-forja-naranja/10 hover:shadow-forja-naranja/20 tracking-wider transition-all duration-300 cursor-pointer text-sm flex items-center justify-center gap-2 mt-4">
+              <span *ngIf="!cargando">INGRESAR AL PANEL</span>
+              <span *ngIf="cargando" class="flex items-center gap-2">
+                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                  </path>
+                </svg>
+                AUTENTICANDO...
+              </span>
+            </button>
+          </form>
+        </div>
+
+        <div
+          [class]="pestanaActiva === 'registro' ? 'opacity-100 translate-x-0 pointer-events-auto relative z-10' : 'opacity-0 translate-x-8 pointer-events-none absolute z-0'"
+          class="w-full space-y-5 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
+
+          <header>
+            <h2 class="text-2xl font-black text-white tracking-wide">Crear Cuenta</h2>
+            <p class="text-forja-ocre text-xs mt-1 font-medium">Ingresa los datos para dar de alta un nuevo Equipo
+              Representante.</p>
+          </header>
+
+          <form [formGroup]="registroForm" (ngSubmit)="onRegistroSubmit()" class="space-y-4">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">person</span>
+                  Nombre del Representante
+                </label>
+                <input formControlName="nombreRepresentante" type="text"
+                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
+                  placeholder="Ej. Carlos" />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">badge</span>
+                  Apellido
+                </label>
+                <input formControlName="apellido" type="text"
+                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
+                  placeholder="Ej. Mendez" />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-forja-ocre">location_on</span>
+                Municipio / Localidad
+              </label>
+              <div class="relative">
+                <select formControlName="municipio"
+                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white appearance-none cursor-pointer">
+                  <option value="" disabled selected class="bg-forja-dark-card text-gray-500">Seleccionar localidad
+                    oficial</option>
+                  <option value="San Salvador de Jujuy" class="bg-forja-dark-card text-white">San Salvador de Jujuy
+                  </option>
+                  <option value="Palpalá" class="bg-forja-dark-card text-white">Palpalá</option>
+                  <option value="Perico" class="bg-forja-dark-card text-white">Perico</option>
+                  <option value="El Carmen" class="bg-forja-dark-card text-white">El Carmen</option>
+                  <option value="San Pedro de Jujuy" class="bg-forja-dark-card text-white">San Pedro de Jujuy</option>
+                  <option value="Libertador General San Martín" class="bg-forja-dark-card text-white">Libertador General
+                    San Martín</option>
+                  <option value="La Quiaca" class="bg-forja-dark-card text-white">La Quiaca</option>
+                  <option value="Humahuaca" class="bg-forja-dark-card text-white">Humahuaca</option>
+                  <option value="Tilcara" class="bg-forja-dark-card text-white">Tilcara</option>
+                </select>
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                  <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-forja-ocre">fingerprint</span>
+                DNI del Representante
+              </label>
+              <input formControlName="dniRepresentante" type="text"
+                class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600 shadow-inner"
+                placeholder="Sin puntos, ej: 38123456" />
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">mail</span>
+                  Correo Electrónico
+                </label>
+                <input formControlName="email" type="email"
+                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
+                  placeholder="correo@ejemplo.com" />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">lock</span>
+                  Contraseña (Mín. 6)
+                </label>
+                <input formControlName="password" type="password"
+                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
+                  placeholder="••••••••" />
+              </div>
+            </div>
+
+            <button [disabled]="registroForm.invalid || cargando" type="submit"
+              class="w-full py-4 bg-gradient-to-r from-forja-naranja to-orange-600 hover:from-orange-600 hover:to-red-600 disabled:from-forja-azul/40 disabled:to-forja-azul/40 disabled:text-gray-500 text-white font-bold rounded-xl shadow-lg tracking-wider transition-all duration-300 cursor-pointer text-sm mt-4 flex items-center justify-center gap-2">
+              <span>COMPLETAR REGISTRO</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <p class="text-center text-gray-500 text-xs mt-6 select-none">
+        Al interactuar con el sistema, aceptas nuestros <a class="text-forja-ocre font-bold hover:underline"
+          href="#">Términos y Condiciones</a> de carga.
+      </p>
+
+    </section>
+  </main>
+
+  <footer class="fixed bottom-4 right-4 hidden md:flex items-center gap-4 text-forja-ocre opacity-40 select-none">
+    <span class="text-[10px] font-bold uppercase tracking-widest text-white">© 2026 Juegos Forja - REC
+      Technologies</span>
+    <div class="h-4 w-[1px] bg-white/10"></div>
+    <span class="text-[10px] font-bold uppercase tracking-widest">SECRETARIA DE DEPORTES DE JUJUY</span>
+  </footer>
+</div>
