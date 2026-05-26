@@ -1,9 +1,7 @@
-// src/app/core/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { jwtDecode } from 'jwt-decode';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -13,13 +11,13 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
+  login(username: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, { username, password }).pipe(
       tap((res) => {
         if (res && res.token) {
           localStorage.setItem('forja_token', res.token);
-          localStorage.setItem('forja_role', res.usuario.rol);
-          localStorage.setItem('forja_user', JSON.stringify(res.usuario)); // <-- ¡ACÁ ESTÁ!
+          localStorage.setItem('forja_role', res.usuario.rol); // ADMIN, EQUIPO o MUNICIPIO
+          localStorage.setItem('forja_user', JSON.stringify(res.usuario));
         }
       }),
     );
@@ -27,6 +25,11 @@ export class AuthService {
 
   getObtenerRol(): string | null {
     return localStorage.getItem('forja_role');
+  }
+
+  getObtenerUsuario(): any {
+    const user = localStorage.getItem('forja_user');
+    return user ? JSON.parse(user) : null;
   }
 
   estaLogueado(): boolean {

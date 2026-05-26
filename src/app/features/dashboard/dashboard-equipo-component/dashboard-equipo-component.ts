@@ -17,7 +17,6 @@ export class DashboardEquipoComponent implements OnInit {
   mostrarFormularioJugador = false;
   procesandoBoton = false;
 
-  // 👇 NUEVAS VARIABLES PARA EL MODAL DE CONFIRMACIÓN PREMIUM
   mostrarModalConfirmarBorrar = false;
   idJugadorABorrar: string | null = null;
   nombreJugadorABorrar = '';
@@ -28,22 +27,28 @@ export class DashboardEquipoComponent implements OnInit {
   configEquipoForm!: FormGroup;
   jugadorForm!: FormGroup;
 
-  pruebasDisponibles: any[] = [];
+  disciplinasDisponibles: any[] = [];
+  pruebasFiltradasPorDisciplina: any[] = [];
   pruebasFiltradas: any[] = [];
   equipoData: any = null;
   jugadores: any[] = [];
 
-  nombrePruebaActiva = '';
   maxJugadoresPermitidos = 0;
   jugadoresInscriptosCount = 0;
   cuposRestantes = 0;
 
   esAtletismo = false;
   esDeporteCombate = false;
+  esAdaptado = false; // 🚀 Control del CUD
+
+  pruebaSeleccionadaData: any = null;
+  anioMinPrueba = 0;
+  anioMaxPrueba = 0;
 
   fileDniFrente: File | null = null;
   fileDniDorso: File | null = null;
   fileFichaMedica: File | null = null;
+  fileCud: File | null = null; // 🚀 Archivo CUD
 
   constructor(
     private fb: FormBuilder,
@@ -55,7 +60,7 @@ export class DashboardEquipoComponent implements OnInit {
   ngOnInit(): void {
     this.configEquipoForm = this.fb.group({
       nombreEquipo: ['', [Validators.required, Validators.minLength(3)]],
-      idPrueba: ['', Validators.required],
+      idDisciplina: ['', Validators.required],
     });
 
     this.jugadorForm = this.fb.group({
@@ -70,12 +75,19 @@ export class DashboardEquipoComponent implements OnInit {
       idPrueba2: [''],
     });
 
+    this.jugadorForm.get('genero')?.valueChanges.subscribe((generoSeleccionado) => {
+      this.filtrarPruebasPorGenero(generoSeleccionado);
+    });
+
+    this.jugadorForm.get('idPrueba1')?.valueChanges.subscribe((idPruebaElegida) => {
+      this.evaluarRequerimientosPrueba(idPruebaElegida);
+    });
+
     this.sincronizarEstadoPanel();
   }
 
   sincronizarEstadoPanel(): void {
     const usuarioString = localStorage.getItem('forja_user');
-
     if (!usuarioString) {
       toast.error('Sesión no encontrada', { description: 'Reautenticando...' });
       setTimeout(() => this.router.navigate(['/login']), 2000);
@@ -88,59 +100,90 @@ export class DashboardEquipoComponent implements OnInit {
 
       this.delegacionService.obtenerEstadoPanel(userId).subscribe({
         next: (res) => {
-          this.pruebasDisponibles = res.pruebasDisponibles || [];
+          setTimeout(() => {
+            this.disciplinasDisponibles = res.disciplinasDisponibles || [];
 
-          if (res.equipoCargado) {
-            this.equipoData = res.equipoCargado;
-            this.jugadores = res.equipoCargado.jugadores || [];
+            if (res.equipoCargado) {
+              this.equipoData = res.equipoCargado;
+              this.jugadores = res.equipoCargado.jugadores || [];
 
-            const pruebaAsignada = res.equipoCargado.pruebaEspecifica;
-            if (pruebaAsignada) {
-              this.nombrePruebaActiva = pruebaAsignada.nombrePrueba;
-              this.maxJugadoresPermitidos = pruebaAsignada.maxJugadores;
-            }
+              const deporte = this.equipoData?.disciplina?.nombre?.toUpperCase() || '';
+              const tipoDisciplina = this.equipoData?.disciplina?.tipo?.toUpperCase() || '';
 
-            this.tieneEquipoConfigurado = true;
-            this.recalcularContadores();
+              this.esAtletismo = deporte.includes('ATLETISMO');
+              this.esAdaptado = tipoDisciplina === 'ADAPTADO'; // 🚀 Captura de tipo Adaptado
 
-            const deporte = this.equipoData?.disciplina?.nombre?.toUpperCase() || '';
-            this.esAtletismo = deporte.includes('ATLETISMO');
-            this.esDeporteCombate = ['BOXEO', 'LEVANTAMIENTO', 'JUDO', 'LUCHA'].some((d) =>
-              deporte.includes(d),
-            );
+              this.esDeporteCombate = ['BOXEO', 'LEVANTAMIENTO', 'JUDO', 'LUCHA'].some((d) =>
+                deporte.includes(d),
+              );
 
-            this.pruebasFiltradas = this.pruebasDisponibles.filter(
-              (p) => p.idDisciplina === this.equipoData.idDisciplina,
-            );
+              this.pruebasFiltradasPorDisciplina =
+                res.pruebasDisponibles?.filter(
+                  (p: any) => p.idDisciplina === this.equipoData.idDisciplina,
+                ) || [];
 
-            if (this.esDeporteCombate) {
-              this.jugadorForm.get('peso')?.setValidators([Validators.required]);
-              this.jugadorForm.get('altura')?.setValidators([Validators.required]);
+              this.recalcularContadores();
+              this.tieneEquipoConfigurado = true;
             } else {
-              this.jugadorForm.get('peso')?.clearValidators();
-              this.jugadorForm.get('altura')?.clearValidators();
+              this.tieneEquipoConfigurado = false;
             }
-            this.jugadorForm.get('peso')?.updateValueAndValidity();
-            this.jugadorForm.get('altura')?.updateValueAndValidity();
-          } else {
-            this.tieneEquipoConfigurado = false;
-            this.pruebasFiltradas = this.pruebasDisponibles;
-          }
 
-          this.cdr.detectChanges();
+            this.cdr.detectChanges();
+          }, 0);
         },
-        error: (err) => {
-          console.error('❌ Error HTTP:', err);
-        },
+        error: (err) => console.error('❌ Error HTTP:', err),
       });
     } catch (e) {
       console.error('❌ Error Parseo LocalStorage:', e);
     }
   }
 
+  filtrarPruebasPorGenero(genero: string): void {
+    if (!genero) {
+      this.pruebasFiltradas = [];
+      return;
+    }
+    this.pruebasFiltradas = this.pruebasFiltradasPorDisciplina.filter((p: any) => {
+      const generoPrueba = p.genero?.toUpperCase();
+      return generoPrueba === genero.toUpperCase() || generoPrueba === 'MIXTO';
+    });
+    this.cdr.detectChanges();
+  }
+
+  evaluarRequerimientosPrueba(idPrueba: any): void {
+    if (!idPrueba) {
+      this.pruebaSeleccionadaData = null;
+      return;
+    }
+
+    this.pruebaSeleccionadaData = this.pruebasFiltradasPorDisciplina.find(
+      (p) => p.id === parseInt(idPrueba),
+    );
+
+    if (this.pruebaSeleccionadaData) {
+      this.anioMinPrueba = this.pruebaSeleccionadaData.anioNacimientoMin;
+      this.anioMaxPrueba = this.pruebaSeleccionadaData.anioNacimientoMax;
+
+      if (this.pruebaSeleccionadaData.requierePeso) {
+        this.jugadorForm.get('peso')?.setValidators([Validators.required, Validators.min(1)]);
+        this.jugadorForm.get('altura')?.setValidators([Validators.required, Validators.min(100)]);
+      } else {
+        this.jugadorForm.get('peso')?.clearValidators();
+        this.jugadorForm.get('altura')?.clearValidators();
+      }
+
+      this.jugadorForm.get('peso')?.updateValueAndValidity();
+      this.jugadorForm.get('altura')?.updateValueAndValidity();
+      this.cdr.detectChanges();
+    }
+  }
+
   recalcularContadores(): void {
     this.jugadoresInscriptosCount = this.jugadores.length;
-    this.cuposRestantes = this.maxJugadoresPermitidos - this.jugadoresInscriptosCount;
+    const pruebaBase = this.pruebasFiltradasPorDisciplina[0];
+    this.maxJugadoresPermitidos = pruebaBase ? pruebaBase.maxJugadores : 12;
+    const restante = this.maxJugadoresPermitidos - this.jugadoresInscriptosCount;
+    this.cuposRestantes = restante < 0 ? 0 : restante;
   }
 
   onFileSelected(event: Event, tipoDoc: string): void {
@@ -150,6 +193,7 @@ export class DashboardEquipoComponent implements OnInit {
       if (tipoDoc === 'frente') this.fileDniFrente = file;
       if (tipoDoc === 'dorso') this.fileDniDorso = file;
       if (tipoDoc === 'ficha') this.fileFichaMedica = file;
+      if (tipoDoc === 'cud') this.fileCud = file; // 🚀 Asignar CUD
       this.cdr.detectChanges();
     }
   }
@@ -167,14 +211,14 @@ export class DashboardEquipoComponent implements OnInit {
 
     const payload = {
       nombreEquipo: this.configEquipoForm.value.nombreEquipo,
-      idPrueba: this.configEquipoForm.value.idPrueba,
+      idDisciplina: parseInt(this.configEquipoForm.value.idDisciplina),
       usuarioId: usuarioLogueado.id,
     };
 
     this.delegacionService.registrarEquipo(payload).subscribe({
-      next: (res) => {
-        toast.success('¡Instancia Vinculada!', { description: res.mensaje });
-        this.tieneEquipoConfigurado = true;
+      next: (res: any) => {
+        // Ajuste genérico para tipado libre de respuesta
+        toast.success('¡Entorno Configurado!', { description: res.mensaje });
         this.sincronizarEstadoPanel();
         this.procesandoBoton = false;
       },
@@ -191,11 +235,42 @@ export class DashboardEquipoComponent implements OnInit {
       return;
     }
 
-    if (!this.modoEdicion && (!this.fileDniFrente || !this.fileDniDorso || !this.fileFichaMedica)) {
-      toast.error('Documentación Incompleta', {
-        description: 'Debe adjuntar los 3 archivos obligatorios.',
-      });
-      return;
+    const fechaNac = this.jugadorForm.get('fechaNacimiento')?.value;
+    if (fechaNac && this.pruebaSeleccionadaData) {
+      const anioAtleta = new Date(fechaNac).getFullYear();
+      if (anioAtleta < this.anioMinPrueba || anioAtleta > this.anioMaxPrueba) {
+        toast.error('Restricción de Edad', {
+          description: `El atleta debe haber nacido entre ${this.anioMinPrueba} y ${this.anioMaxPrueba} para ingresar a esta prueba.`,
+        });
+        return;
+      }
+    }
+
+    const pesoIngresado = this.jugadorForm.get('peso')?.value;
+    if (this.pruebaSeleccionadaData?.requierePeso && pesoIngresado) {
+      const pesoMaxPermitido = parseFloat(this.pruebaSeleccionadaData.pesoMaximo);
+      if (pesoMaxPermitido && parseFloat(pesoIngresado) > pesoMaxPermitido) {
+        toast.error('Exceso de Peso', {
+          description: `El peso máximo permitido para la categoría es de ${pesoMaxPermitido} kg.`,
+        });
+        return;
+      }
+    }
+
+    if (!this.modoEdicion) {
+      if (!this.fileDniFrente || !this.fileDniDorso || !this.fileFichaMedica) {
+        toast.error('Documentación Incompleta', {
+          description: 'Debe adjuntar los 3 archivos obligatorios.',
+        });
+        return;
+      }
+      // 🚀 Validación preventiva de CUD
+      if (this.esAdaptado && !this.fileCud) {
+        toast.error('CUD Obligatorio', {
+          description: 'Las disciplinas adaptadas exigen el Certificado de Discapacidad.',
+        });
+        return;
+      }
     }
 
     this.procesandoBoton = true;
@@ -239,6 +314,7 @@ export class DashboardEquipoComponent implements OnInit {
       if (this.fileDniFrente) formData.append('dniFrente', this.fileDniFrente);
       if (this.fileDniDorso) formData.append('dniDorso', this.fileDniDorso);
       if (this.fileFichaMedica) formData.append('fichaMedica', this.fileFichaMedica);
+      if (this.esAdaptado && this.fileCud) formData.append('cud', this.fileCud); // 🚀 Inyección CUD
 
       this.delegacionService.registrarJugador(formData).subscribe({
         next: (res) => {
@@ -249,7 +325,7 @@ export class DashboardEquipoComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoBoton = false;
-          toast.error('Inscripción Fue Rechazada', { description: err.error?.error });
+          toast.error('Inscripción de Roster Fallida', { description: err.error?.error });
         },
       });
     }
@@ -257,14 +333,19 @@ export class DashboardEquipoComponent implements OnInit {
 
   abrirCargaJugador(): void {
     if (this.cuposRestantes <= 0) {
-      toast.error('Cupo Máximo Alcanzado', {
-        description: 'Esta categoría no permite agregar más atletas.',
+      toast.error('Lista de Buena Fe Completa', {
+        description:
+          'La delegación ya ha ocupado el máximo de vacantes permitidas para esta disciplina.',
+        position: 'top-center',
       });
       return;
     }
+
     this.modoEdicion = false;
     this.idJugadorEdicion = null;
+    this.pruebaSeleccionadaData = null;
     this.jugadorForm.reset({ genero: '', idPrueba1: '', idPrueba2: '' });
+    this.pruebasFiltradas = [];
     this.mostrarFormularioJugador = true;
     this.cdr.detectChanges();
   }
@@ -273,6 +354,9 @@ export class DashboardEquipoComponent implements OnInit {
     this.modoEdicion = true;
     this.idJugadorEdicion = jugador.id;
     const fechaFormateada = jugador.fechaNacimiento ? jugador.fechaNacimiento.substring(0, 10) : '';
+
+    this.filtrarPruebasPorGenero(jugador.genero);
+    this.evaluarRequerimientosPrueba(jugador.idPrueba);
 
     this.jugadorForm.patchValue({
       dni: jugador.dni,
@@ -290,7 +374,6 @@ export class DashboardEquipoComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // 👇 RUTA INTERMEDIA: Abre el modal estilizado reteniendo el contexto
   solicitarBajaJugador(jugador: any): void {
     this.idJugadorABorrar = jugador.id;
     this.nombreJugadorABorrar = `${jugador.apellido.toUpperCase()}, ${jugador.nombre}`;
@@ -298,22 +381,17 @@ export class DashboardEquipoComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // 👇 CON CONFIRMACIÓN OPTIMISTA INTEGRADA EN TIEMPO REAL 🔥
   confirmarBajaJugador(): void {
     if (!this.idJugadorABorrar) return;
 
     const idResguardo = this.idJugadorABorrar;
-
-    // 1. RESPUESTA OPTIMISTA INMEDIATA: Respaldamos la lista actual por si falla el VPS
     const listadoResguardo = [...this.jugadores];
 
-    // Modificamos el array visual en el acto (0 milisegundos de retraso para el usuario)
     this.jugadores = this.jugadores.filter((j) => j.id !== idResguardo);
     this.recalcularContadores();
-    this.mostrarModalConfirmarBorrar = false; // Cerramos el modal de inmediato
+    this.mostrarModalConfirmarBorrar = false;
     this.cdr.detectChanges();
 
-    // 2. Ejecutamos la petición física al backend en segundo plano
     this.delegacionService.eliminarJugador(idResguardo).subscribe({
       next: (res) => {
         toast.success('Baja Procesada', { description: res.mensaje });
@@ -321,17 +399,12 @@ export class DashboardEquipoComponent implements OnInit {
         this.nombreJugadorABorrar = '';
       },
       error: (err) => {
-        // REVERSIÓN DE EMERGENCIA: Si el servidor falla, restauramos al atleta al instante
-        console.error('❌ Falló la baja en el servidor. Revirtiendo grilla...', err);
         this.jugadores = listadoResguardo;
         this.recalcularContadores();
         this.idJugadorABorrar = null;
         this.nombreJugadorABorrar = '';
         this.cdr.detectChanges();
-
-        toast.error('No se pudo procesar la baja', {
-          description: err.error?.error || 'Conexión interrumpida con la Secretaría de Deportes.',
-        });
+        toast.error('No se pudo procesar la baja', { description: err.error?.error });
       },
     });
   }
@@ -341,6 +414,9 @@ export class DashboardEquipoComponent implements OnInit {
     this.fileDniFrente = null;
     this.fileDniDorso = null;
     this.fileFichaMedica = null;
+    this.fileCud = null; // 🚀 Limpieza CUD
+    this.pruebasFiltradas = [];
+    this.pruebaSeleccionadaData = null;
     this.mostrarFormularioJugador = false;
     this.procesandoBoton = false;
     this.cdr.detectChanges();

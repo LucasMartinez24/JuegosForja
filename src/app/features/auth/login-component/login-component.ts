@@ -1,13 +1,14 @@
-import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.services';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { toast } from 'ngx-sonner';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-login-component',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login-component.html',
   styleUrl: './login-component.css',
@@ -15,9 +16,9 @@ import { toast } from 'ngx-sonner';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   registroForm!: FormGroup;
-
   pestanaActiva: 'login' | 'registro' = 'login';
   cargando = false;
+  localidadesProvinciales: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -28,17 +29,30 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
     this.registroForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: [
+        '',
+        [Validators.required, Validators.minLength(3), Validators.pattern('^[a-zA-Z0-9_]+$')],
+      ],
       password: ['', [Validators.required, Validators.minLength(6)]],
       nombreRepresentante: ['', Validators.required],
       apellido: ['', Validators.required],
-      dniRepresentante: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}$')]], // <-- NUEVO CONTROL VALIDADO
-      municipio: ['', Validators.required],
+      dniRepresentante: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}$')]],
+      idLocalidad: ['', Validators.required],
+      tokenInvitacion: ['', [Validators.required, Validators.minLength(5)]],
+    });
+
+    this.cargarLocalidadesPublicas();
+  }
+
+  cargarLocalidadesPublicas(): void {
+    this.http.get<any[]>('http://localhost:3000/api/auth/localidades').subscribe({
+      next: (res) => (this.localidadesProvinciales = res),
+      error: (err) => console.error('Error al traer localidades:', err),
     });
   }
 
@@ -47,7 +61,6 @@ export class LoginComponent implements OnInit {
     this.pestanaActiva = pestana;
   }
 
-  // Adentro de src/app/features/auth/login.component.ts -> método onLoginSubmit()
   onLoginSubmit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -55,38 +68,39 @@ export class LoginComponent implements OnInit {
     }
     this.cargando = true;
 
-    this.authService.login(this.loginForm.value.email, this.loginForm.value.password).subscribe({
-      next: () => {
+    const { username, password } = this.loginForm.value;
+
+    this.authService.login(username, password).subscribe({
+      next: (res: any) => {
+        // 🚩 Capturamos la respuesta 'res'
         this.cargando = false;
 
-        // 1. Validamos el rol guardado en las propiedades del AuthService tras descifrar el JWT
-        const rol = this.authService.getObtenerRol();
-        console.log('🔰 Rol detectado en el inicio de sesión:', rol);
+        // 💾 GUARDAR CLAIMS PARA EL DASHBOARD
+        // Extraemos los datos que el backend debería estar enviando
+        if (res.usuario) {
+          const claims = {
+            idLocalidad: res.usuario.idLocalidad,
+            localidadNombre: res.usuario.localidadNombre || 'Municipio',
+            rol: res.usuario.rol,
+          };
+          localStorage.setItem('user_claims', JSON.stringify(claims));
+        }
 
-        // 2. Enrutamiento inteligente según el rango del usuario 🚀
+        const rol = this.authService.getObtenerRol();
+        console.log('🔰 Rol detectado:', rol);
+
+        // Lógica de redirección...
         if (rol === 'ADMIN') {
-          toast.success('¡Acceso de Auditor Otorgado!', {
-            description: 'Bienvenido al Panel de Control Central del Ministerio.',
-          });
-          this.router.navigate(['/dashboard-admin']); // Redirige al árbol colapsable provincial
+          this.router.navigate(['/dashboard-admin']);
+        } else if (rol === 'MUNICIPIO') {
+          this.router.navigate(['/dashboard-municipio']);
         } else if (rol === 'EQUIPO') {
-          toast.success('¡Acceso Concedido!', {
-            description: 'Bienvenido a la plataforma de carga de los Juegos FORJA.',
-          });
-          this.router.navigate(['/dashboard-equipo']); // Redirige al panel de las listas de buena fe
-        } else {
-          // Medida defensiva por si en el futuro agregás el rol 'MUNICIPIO' o cae un rol desconocido
-          toast.error('Acceso Restringido', {
-            description: 'El rol de esta cuenta no posee un entorno configurado en esta terminal.',
-          });
-          this.authService.logout();
+          this.router.navigate(['/dashboard-equipo']);
         }
       },
       error: (err) => {
         this.cargando = false;
-        toast.error('Error de autenticación', {
-          description: err.error?.error || 'Verifique sus credenciales e intente nuevamente.',
-        });
+        toast.error('Error de autenticación');
       },
     });
   }
@@ -99,28 +113,28 @@ export class LoginComponent implements OnInit {
     this.cargando = true;
 
     const payload = {
-      email: this.registroForm.value.email,
+      username: this.registroForm.value.username,
       password: this.registroForm.value.password,
-      rol: 'EQUIPO',
       nombreRepresentante: this.registroForm.value.nombreRepresentante,
       apellido: this.registroForm.value.apellido,
-      dniRepresentante: this.registroForm.value.dniRepresentante, // <-- Inyectado al payload
-      municipio: this.registroForm.value.municipio,
+      dniRepresentante: this.registroForm.value.dniRepresentante,
+      idLocalidad: parseInt(this.registroForm.value.idLocalidad),
+      tokenInvitacion: this.registroForm.value.tokenInvitacion,
     };
 
     this.http.post('http://localhost:3000/api/auth/register', payload).subscribe({
       next: () => {
         this.cargando = false;
-        toast.success('Registro completado', {
-          description: `El representante con DNI ${payload.dniRepresentante} se dio de alta correctamente.`,
+        toast.success('¡Registro Exitoso por Lista Blanca!', {
+          description: `El delegado del club "${payload.username}" fue dado de alta correctamente.`,
         });
         this.registroForm.reset();
         this.pestanaActiva = 'login';
       },
       error: (err) => {
         this.cargando = false;
-        toast.error('No se pudo procesar el alta', {
-          description: err.error?.error || 'Hubo un inconveniente en el servidor.',
+        toast.error('Token Fue Rechazado', {
+          description: err.error?.error || 'No se pudo procesar el alta.',
         });
       },
     });

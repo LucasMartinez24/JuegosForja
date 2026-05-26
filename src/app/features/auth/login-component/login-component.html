@@ -13,7 +13,6 @@
 
     <section
       class="md:w-5/12 relative bg-forja-azul flex flex-col justify-between p-8 md:p-12 text-white overflow-hidden min-h-[420px] md:min-h-auto border-b md:border-b-0 md:border-r border-white/5">
-
       <div class="absolute inset-0 z-0 select-none pointer-events-none">
         <img alt="Athletes in action" class="w-full h-full object-cover opacity-35 mix-blend-overlay scale-105"
           src="/img/Deportista.webp" />
@@ -21,12 +20,10 @@
           class="absolute inset-0 bg-gradient-to-t from-forja-dark-bg via-forja-azul/40 to-forja-dark-bg/60 opacity-100">
         </div>
       </div>
-
       <div class="relative z-10 flex justify-center md:justify-start">
         <img src="/img/logo.png" alt="Logo Juegos Forja"
           class="h-24 lg:h-32 w-auto object-contain drop-shadow-[0_8px_24px_rgba(248,87,51,0.25)] transition-transform duration-300 hover:scale-105" />
       </div>
-
       <div class="relative z-10 space-y-4 mt-8 md:mt-0 text-center md:text-left">
         <h1 class="text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-md">
           Forjando el futuro <br class="hidden lg:inline" />del deporte
@@ -56,22 +53,21 @@
         <div
           [class]="pestanaActiva === 'login' ? 'opacity-100 translate-x-0 pointer-events-auto relative z-10' : 'opacity-0 -translate-x-8 pointer-events-none absolute z-0'"
           class="w-full space-y-6 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
-
           <header>
             <h2 class="text-2xl font-black text-white tracking-wide">Ingreso General</h2>
-            <p class="text-forja-ocre text-xs mt-1 font-medium">Cargue sus credenciales asignadas para administrar o
+            <p class="text-forja-ocre text-xs mt-1 font-medium">Cargue su cuenta de usuario asignada para administrar o
               inscribir.</p>
           </header>
 
           <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" class="space-y-5">
             <div class="flex flex-col gap-2">
               <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                <span class="material-symbols-outlined text-sm text-forja-ocre">mail</span>
-                Correo Electrónico
+                <span class="material-symbols-outlined text-sm text-forja-ocre">account_circle</span>
+                Nombre de Usuario
               </label>
-              <input formControlName="email" type="email"
+              <input formControlName="username" type="text"
                 class="w-full px-4 py-3.5 bg-forja-dark-input/60 border border-white/10 focus:border-forja-naranja focus:ring-1 focus:ring-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600 shadow-inner"
-                placeholder="usuario@correo.com" />
+                placeholder="Ej. palpaladeportes" />
             </div>
 
             <div class="flex flex-col gap-2">
@@ -103,20 +99,17 @@
         <div
           [class]="pestanaActiva === 'registro' ? 'opacity-100 translate-x-0 pointer-events-auto relative z-10' : 'opacity-0 translate-x-8 pointer-events-none absolute z-0'"
           class="w-full space-y-5 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
-
           <header>
             <h2 class="text-2xl font-black text-white tracking-wide">Crear Cuenta</h2>
-            <p class="text-forja-ocre text-xs mt-1 font-medium">Ingresa los datos para dar de alta un nuevo Equipo
-              Representante.</p>
+            <p class="text-forja-ocre text-xs mt-1 font-medium">Requiere Token de Validación Municipal asignado por la
+              Secretaría.</p>
           </header>
 
           <form [formGroup]="registroForm" (ngSubmit)="onRegistroSubmit()" class="space-y-4">
-
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="flex flex-col gap-1.5">
                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-sm text-forja-ocre">person</span>
-                  Nombre del Representante
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">person</span> Nombre del Representante
                 </label>
                 <input formControlName="nombreRepresentante" type="text"
                   class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
@@ -124,8 +117,7 @@
               </div>
               <div class="flex flex-col gap-1.5">
                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-sm text-forja-ocre">badge</span>
-                  Apellido
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">badge</span> Apellido
                 </label>
                 <input formControlName="apellido" type="text"
                   class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
@@ -135,54 +127,60 @@
 
             <div class="flex flex-col gap-1.5">
               <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-sm text-forja-ocre">location_on</span>
-                Municipio / Localidad
+                <span class="material-symbols-outlined text-sm text-forja-ocre">location_on</span> Municipio / Comisión
+                Municipal
               </label>
               <div class="relative">
-                <select formControlName="municipio"
+                <select formControlName="idLocalidad"
                   class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white appearance-none cursor-pointer">
-                  <option value="" disabled selected class="bg-forja-dark-card text-gray-500">Seleccionar localidad
-                    oficial</option>
-                  <option value="San Salvador de Jujuy" class="bg-forja-dark-card text-white">San Salvador de Jujuy
+                  <option value="" disabled selected class="bg-forja-dark-card text-gray-500">Seleccionar Jurisdicción
+                    Oficial</option>
+                  <option *ngFor="let loc of localidadesProvinciales" [value]="loc.id"
+                    class="bg-forja-dark-card text-white">
+                    {{ loc.nombre }} ({{ loc.tipo === 'MUNICIPALIDAD' ? 'Mun.' : 'Comisión' }})
                   </option>
-                  <option value="Palpalá" class="bg-forja-dark-card text-white">Palpalá</option>
-                  <option value="Perico" class="bg-forja-dark-card text-white">Perico</option>
-                  <option value="El Carmen" class="bg-forja-dark-card text-white">El Carmen</option>
-                  <option value="San Pedro de Jujuy" class="bg-forja-dark-card text-white">San Pedro de Jujuy</option>
-                  <option value="Libertador General San Martín" class="bg-forja-dark-card text-white">Libertador General
-                    San Martín</option>
-                  <option value="La Quiaca" class="bg-forja-dark-card text-white">La Quiaca</option>
-                  <option value="Humahuaca" class="bg-forja-dark-card text-white">Humahuaca</option>
-                  <option value="Tilcara" class="bg-forja-dark-card text-white">Tilcara</option>
                 </select>
                 <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
                   <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
                 </div>
               </div>
             </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-sm text-forja-ocre">fingerprint</span>
-                DNI del Representante
-              </label>
-              <input formControlName="dniRepresentante" type="text"
-                class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600 shadow-inner"
-                placeholder="Sin puntos, ej: 38123456" />
-            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="flex flex-col gap-1.5">
                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-sm text-forja-ocre">mail</span>
-                  Correo Electrónico
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">fingerprint</span> DNI del
+                  Representante
                 </label>
-                <input formControlName="email" type="email"
+                <input formControlName="dniRepresentante" type="text"
+                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600 shadow-inner"
+                  placeholder="Sin puntos" />
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label
+                  class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
+                  <span class="material-symbols-outlined text-sm">vpn_key</span> Token de Lista Blanca
+                </label>
+                <input formControlName="tokenInvitacion" type="text"
+                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-forja-ocre/30 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600 uppercase font-mono"
+                  placeholder="FORJA-XXXX-XXXX" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">account_circle</span> Nombre de
+                  Usuario
+                </label>
+                <input formControlName="username" type="text"
                   class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
-                  placeholder="correo@ejemplo.com" />
+                  placeholder="Ej. club_gorriti" />
               </div>
               <div class="flex flex-col gap-1.5">
                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-sm text-forja-ocre">lock</span>
-                  Contraseña (Mín. 6)
+                  <span class="material-symbols-outlined text-sm text-forja-ocre">lock</span> Contraseña (Mín. 6)
                 </label>
                 <input formControlName="password" type="password"
                   class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
@@ -192,8 +190,8 @@
 
             <button [disabled]="registroForm.invalid || cargando" type="submit"
               class="w-full py-4 bg-gradient-to-r from-forja-naranja to-orange-600 hover:from-orange-600 hover:to-red-600 disabled:from-forja-azul/40 disabled:to-forja-azul/40 disabled:text-gray-500 text-white font-bold rounded-xl shadow-lg tracking-wider transition-all duration-300 cursor-pointer text-sm mt-4 flex items-center justify-center gap-2">
-              <span>COMPLETAR REGISTRO</span>
-              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              <span>VALIDAR TOKEN Y REGISTRAR</span>
+              <span class="material-symbols-outlined text-sm">verified_user</span>
             </button>
           </form>
         </div>

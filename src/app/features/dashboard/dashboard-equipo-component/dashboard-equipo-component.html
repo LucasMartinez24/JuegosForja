@@ -27,8 +27,8 @@
             <span class="material-symbols-outlined text-xl">logout</span>
           </button>
         </div>
-        <p class="text-xs text-forja-ocre">Vincule su cuenta de representante al equipo y subcategoría correspondiente.
-        </p>
+        <p class="text-xs text-forja-ocre">Vincule su cuenta de representante a la Disciplina correspondiente de los
+          juegos.</p>
       </header>
 
       <form [formGroup]="configEquipoForm" (ngSubmit)="onGuardarEquipo()" class="space-y-5">
@@ -41,16 +41,15 @@
         </div>
 
         <div class="flex flex-col gap-2">
-          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Instancia Específica de
-            Competencia</label>
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Disciplina Deportiva
+            Asignada</label>
           <div class="relative">
-            <select formControlName="idPrueba"
+            <select formControlName="idDisciplina"
               class="w-full px-4 py-3.5 bg-forja-dark-input/60 border border-white/10 focus:border-forja-naranja rounded-xl text-sm text-white outline-none cursor-pointer appearance-none">
-              <option value="" disabled selected class="text-gray-500">Seleccionar Instancia Oficial</option>
-              <option *ngFor="let prueba of pruebasDisponibles" [value]="prueba?.id"
+              <option value="" disabled selected class="text-gray-500">Seleccionar Disciplina Oficial</option>
+              <option *ngFor="let disc of disciplinasDisponibles" [value]="disc?.id"
                 class="bg-forja-dark-card text-white">
-                [{{ prueba?.disciplina?.nombre }}] {{ prueba?.nombrePrueba }} (Cupo Máx: {{ prueba?.maxJugadores }}
-                Atletas)
+                {{ disc?.nombre }}
               </option>
             </select>
             <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
@@ -67,7 +66,6 @@
     </main>
 
     <main *ngIf="tieneEquipoConfigurado" class="space-y-6 my-4">
-
       <section
         class="bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-lg">
         <div class="flex items-center gap-4">
@@ -77,21 +75,18 @@
             <span class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">{{ equipoData?.municipio
               }}</span>
             <h1 class="text-xl font-black text-white tracking-wide">{{ equipoData?.nombre }}</h1>
-            <p class="text-xs text-gray-400 mt-0.5">Categoría activa: <strong class="text-forja-naranja">{{
-                nombrePruebaActiva }}</strong></p>
+            <p class="text-xs text-gray-400 mt-0.5">Disciplina activa: <strong class="text-forja-naranja uppercase">{{
+                equipoData?.disciplina?.nombre }}</strong></p>
           </div>
         </div>
 
         <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
           <button (click)="abrirCargaJugador()"
             class="px-5 py-3 bg-gradient-to-r from-forja-naranja to-orange-600 hover:scale-[1.02] active:scale-[0.98] text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2 flex-1 sm:flex-initial justify-center">
-            <span class="material-symbols-outlined text-sm font-bold">person_add</span>
-            Inscribir Atleta
+            <span class="material-symbols-outlined text-sm font-bold">person_add</span> Inscribir Atleta
           </button>
-
           <button (click)="logout()" type="button"
-            class="p-3 bg-white/[0.03] border border-white/10 hover:border-red-500/40 hover:bg-red-500/10 text-white font-bold hover:text-red-400 rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
-            title="Cerrar Sesión">
+            class="p-3 bg-white/[0.03] border border-white/10 hover:border-red-500/40 hover:bg-red-500/10 text-white font-bold hover:text-red-400 rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2">
             Cerrar Sesión <span class="material-symbols-outlined text-sm font-bold">logout</span>
           </button>
         </div>
@@ -101,29 +96,27 @@
         <div
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
           <div>
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Lista Oficial Permitida</p>
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cupos Permitidos</p>
             <h3 class="text-2xl font-black text-white mt-1">{{ maxJugadoresPermitidos }} <span
-                class="text-xs font-normal text-gray-500">Cupos</span></h3>
+                class="text-xs font-normal text-gray-500">Máximos</span></h3>
           </div>
           <span class="material-symbols-outlined text-gray-600 text-3xl">assignment</span>
         </div>
-
         <div
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
           <div>
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Inscriptos en Roster</p>
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cupos Utilizados</p>
             <h3 class="text-2xl font-black text-forja-naranja mt-1">{{ jugadoresInscriptosCount }} <span
-                class="text-xs font-normal text-gray-500">Cargados</span></h3>
+                class="text-xs font-normal text-gray-500">Inscriptos</span></h3>
           </div>
           <span class="material-symbols-outlined text-forja-naranja/40 text-3xl">group_add</span>
         </div>
-
         <div
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
           <div>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vacantes Libres</p>
             <h3 class="text-2xl font-black text-emerald-400 mt-1">{{ cuposRestantes }} <span
-                class="text-xs font-normal text-gray-500">Lugares</span></h3>
+                class="text-xs font-normal text-gray-500">Disponibles</span></h3>
           </div>
           <span class="material-symbols-outlined text-emerald-500/40 text-3xl">add_moderator</span>
         </div>
@@ -134,13 +127,11 @@
           class="fixed inset-0 bg-forja-dark-bg/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div
             class="bg-forja-dark-card border border-white/10 rounded-2xl p-6 max-w-[500px] w-full space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
-
             <header class="flex justify-between items-center border-b border-white/5 pb-3">
               <div>
-                <h3 class="text-md font-black text-white tracking-wide">
-                  {{ modoEdicion ? 'Actualizar Ficha de Competencia' : 'Ficha Individual de Inscripción' }}
-                </h3>
-                <p class="text-[11px] text-gray-400">Inserte la información y adjunte los archivos del deportista.</p>
+                <h3 class="text-md font-black text-white tracking-wide">{{ modoEdicion ? 'Actualizar Ficha de
+                  Competencia' : 'Ficha Individual de Inscripción' }}</h3>
+                <p class="text-[11px] text-gray-400">Seleccione la prueba específica e ingrese la documentación.</p>
               </div>
               <button type="button" (click)="mostrarFormularioJugador = false"
                 class="text-gray-500 hover:text-white cursor-pointer transition-colors">
@@ -149,15 +140,13 @@
             </header>
 
             <form [formGroup]="jugadorForm" (ngSubmit)="onRegistrarJugador()" class="space-y-4">
-
               <div class="flex flex-col gap-1.5">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Documento Único
-                  (DNI)</label>
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">DNI (Sin Puntos)</label>
                 <input formControlName="dni" type="text"
                   class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none"
                   placeholder="Ej. 45123456" />
                 <span *ngIf="jugadorForm.get('dni')?.touched && jugadorForm.get('dni')?.invalid"
-                  class="text-[10px] text-forja-naranja font-bold">DNI inválido (debe tener 7 u 8 números).</span>
+                  class="text-[10px] text-forja-naranja font-bold">DNI inválido (7 u 8 números).</span>
               </div>
 
               <div class="grid grid-cols-2 gap-3">
@@ -177,7 +166,10 @@
 
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">F. Nacimiento</label>
+                  <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    F. Nacimiento <span *ngIf="pruebaSeleccionadaData" class="text-forja-ocre">({{ anioMinPrueba }}-{{
+                      anioMaxPrueba }})</span>
+                  </label>
                   <input formControlName="fechaNacimiento" type="date"
                     class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
                 </div>
@@ -196,7 +188,8 @@
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    Peso Corporal (kg) <span *ngIf="esDeporteCombate" class="text-forja-naranja">*</span>
+                    Peso (kg) <span *ngIf="pruebaSeleccionadaData?.requierePeso" class="text-forja-naranja font-black">*
+                      Máx: {{ pruebaSeleccionadaData?.pesoMaximo }}</span>
                   </label>
                   <input formControlName="peso" type="number" step="0.1"
                     class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none"
@@ -204,7 +197,8 @@
                 </div>
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    Altura (cm) <span *ngIf="esDeporteCombate" class="text-forja-naranja">*</span>
+                    Altura (cm) <span *ngIf="pruebaSeleccionadaData?.requierePeso"
+                      class="text-forja-naranja font-black">*</span>
                   </label>
                   <input formControlName="altura" type="number"
                     class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none"
@@ -214,37 +208,44 @@
 
               <div class="space-y-3">
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prueba Principal de
-                    Competencia</label>
-                  <select formControlName="idPrueba1"
-                    class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer">
-                    <option value="" disabled selected>Seleccionar Instancia</option>
-                    <option *ngFor="let p of pruebasFiltradas" [value]="p.id">{{ p.nombrePrueba }}</option>
-                  </select>
+                  <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prueba / Especialidad de
+                    Inscripción</label>
+                  <div class="relative">
+                    <select formControlName="idPrueba1"
+                      class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none">
+                      <option value="" disabled selected>{{ jugadorForm.get('genero')?.value ? 'Seleccionar Instancia
+                        Oficial' : '⚠️ Primero elija una Rama/Género arriba' }}</option>
+                      <option *ngFor="let p of pruebasFiltradas" [value]="p.id">{{ p.nombrePrueba }} (Cupo Máx: {{
+                        p.maxJugadores }})</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400"><span
+                        class="material-symbols-outlined text-base">keyboard_arrow_down</span></div>
+                  </div>
                 </div>
 
-                <div *ngIf="esAtletismo" class="flex flex-col gap-1.5 animate-fade-in">
-                  <label class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">Segunda Prueba Opcional
-                    (Reglamento Máx. 2)</label>
-                  <select formControlName="idPrueba2"
-                    class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer">
-                    <option value="">Ninguna - Participa solo en una prueba</option>
-                    <option *ngFor="let p of pruebasFiltradas" [value]="p.id"
-                      [disabled]="jugadorForm.get('idPrueba1')?.value == p.id">
-                      {{ p.nombrePrueba }}
-                    </option>
-                  </select>
+                <div *ngIf="esAtletismo && pruebasFiltradas.length > 0" class="flex flex-col gap-1.5 animate-fade-in">
+                  <label class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">Segunda Prueba
+                    Opcional</label>
+                  <div class="relative">
+                    <select formControlName="idPrueba2"
+                      class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none">
+                      <option value="">Ninguna - Participa solo en una prueba</option>
+                      <option *ngFor="let p of pruebasFiltradas" [value]="p.id"
+                        [disabled]="jugadorForm.get('idPrueba1')?.value == p.id">{{ p.nombrePrueba }}</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400"><span
+                        class="material-symbols-outlined text-base">keyboard_arrow_down</span></div>
+                  </div>
                 </div>
               </div>
 
               <div class="border-t border-white/5 pt-3 space-y-3">
                 <p class="text-[10px] font-bold text-forja-naranja uppercase tracking-widest mb-1">Documentación Digital
-                  de Auditoría</p>
+                </p>
 
                 <div class="grid grid-cols-2 gap-3">
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">DNI Frente
-                      (Imagen/PDF)</label>
+                    <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">DNI Frente</label>
                     <label
                       class="w-full px-3 py-2 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-forja-naranja rounded-xl text-[11px] text-gray-400 text-center cursor-pointer transition-all truncate block">
                       <span class="material-symbols-outlined text-xs align-middle mr-1">upload_file</span>
@@ -253,10 +254,8 @@
                         class="hidden" />
                     </label>
                   </div>
-
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">DNI Dorso
-                      (Imagen/PDF)</label>
+                    <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">DNI Dorso</label>
                     <label
                       class="w-full px-3 py-2 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-forja-naranja rounded-xl text-[11px] text-gray-400 text-center cursor-pointer transition-all truncate block">
                       <span class="material-symbols-outlined text-xs align-middle mr-1">upload_file</span>
@@ -267,17 +266,32 @@
                   </div>
                 </div>
 
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Ficha Médica / Certificado
-                    Aptitud (PDF)</label>
-                  <label
-                    class="w-full px-4 py-2.5 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-emerald-500 rounded-xl text-[11px] text-gray-300 text-center cursor-pointer transition-all truncate block">
-                    <span
-                      class="material-symbols-outlined text-sm align-middle mr-1 text-emerald-400">medical_services</span>
-                    {{ fileFichaMedica ? fileFichaMedica.name : 'Seleccionar PDF de Aptitud Médica Firmado' }}
-                    <input type="file" (change)="onFileSelected($event, 'ficha')" accept="application/pdf,image/*"
-                      class="hidden" />
-                  </label>
+                <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-2]="esAdaptado">
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Ficha Médica Colectiva
+                      (PDF)</label>
+                    <label
+                      class="w-full px-4 py-2.5 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-emerald-500 rounded-xl text-[11px] text-gray-300 text-center cursor-pointer transition-all truncate block">
+                      <span
+                        class="material-symbols-outlined text-sm align-middle mr-1 text-emerald-400">medical_services</span>
+                      {{ fileFichaMedica ? fileFichaMedica.name : 'Seleccionar PDF de Aptitud' }}
+                      <input type="file" (change)="onFileSelected($event, 'ficha')" accept="application/pdf,image/*"
+                        class="hidden" />
+                    </label>
+                  </div>
+
+                  <div *ngIf="esAdaptado" class="flex flex-col gap-1.5 animate-fade-in">
+                    <label class="text-[9px] font-bold text-forja-ocre uppercase tracking-wider">Certificado de
+                      Discapacidad (CUD)</label>
+                    <label
+                      class="w-full px-4 py-2.5 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-forja-ocre rounded-xl text-[11px] text-gray-300 text-center cursor-pointer transition-all truncate block">
+                      <span
+                        class="material-symbols-outlined text-sm align-middle mr-1 text-forja-ocre">accessibility_new</span>
+                      {{ fileCud ? fileCud.name : 'Adjuntar CUD (Obligatorio)' }}
+                      <input type="file" (change)="onFileSelected($event, 'cud')" accept="application/pdf,image/*"
+                        class="hidden" />
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -286,96 +300,80 @@
                   class="px-4 py-2.5 rounded-xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white cursor-pointer transition-colors">
                   Cancelar
                 </button>
-
-                <button [disabled]="procesandoBoton" type="submit"
-                  class="px-5 py-2.5 bg-gradient-to-r from-forja-naranja to-orange-600 disabled:from-forja-azul/40 text-white font-bold text-xs rounded-xl uppercase tracking-wider cursor-pointer shadow-md">
-                  {{ procesandoBoton ? 'GUARDANDO...' : 'REGISTRAR ATLETA' }}
-                </button>
+                <button [disabled]="jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion) || procesandoBoton"
+                  type="submit"
+                  [class]="(jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion)) ? 'bg-gray-700 text-gray-500 border border-white/5 cursor-not-allowed' : 'bg-gradient-to-r from-forja-naranja to-orange-600 text-white cursor-pointer shadow-md'"
+                  class="px-5 py-2.5 font-bold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center gap-2">
+                  <span class="material-symbols-outlined text-sm font-bold" *ngIf="!procesandoBoton">
+                    {{ cuposRestantes <= 0 && !modoEdicion ? 'block' : 'save' }} </span>
+                      {{ procesandoBoton ? 'GUARDANDO...' : (cuposRestantes <= 0 && !modoEdicion ? 'SIN VACANTES'
+                        : 'REGISTRAR ATLETA' ) }} </button>
               </div>
-
             </form>
           </div>
         </div>
+      </section>
 
-        <div
-          class="bg-forja-dark-card/50 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl min-h-[450px]">
-          <div class="overflow-x-auto rounded-xl border border-white/5">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr
-                  class="bg-forja-dark-input/60 border-b border-white/5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  <th class="p-4">Apellido y Nombre</th>
-                  <th class="p-4">DNI</th>
-                  <th class="p-4">Rama Competencia</th>
-                  <th class="p-4">Prueba / Modalidad</th>
-                  <th class="p-4 text-center">Estado de Habilitación</th>
-                  <th class="p-4 text-center">Acciones Operativas</th>
-                </tr>
-              </thead>
-              <tbody class="text-xs font-medium text-gray-200 divide-y divide-white/5">
-                <tr *ngFor="let jugador of jugadores" class="hover:bg-white/[0.01] transition-colors">
-
-                  <td class="p-4 font-bold text-white uppercase">
-                    {{ jugador?.apellido }}, {{ jugador?.nombre }}
-                  </td>
-
-                  <td class="p-4 font-mono text-gray-400 tracking-wider">
-                    {{ jugador?.dni }}
-                  </td>
-
-                  <td class="p-4">
-                    <span
-                      class="text-[10px] text-forja-ocre bg-forja-azul/50 border border-white/5 px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
-                      {{ jugador?.genero }}
-                    </span>
-                  </td>
-
-                  <td class="p-4 space-y-1">
-                    <div class="text-white font-bold tracking-wide uppercase text-[11px]">
-                      {{ jugador?.prueba?.nombrePrueba || 'Prueba General' }}
-                    </div>
-
-                    <div *ngIf="jugador?.idPrueba2"
-                      class="text-forja-ocre text-[10px] font-medium italic flex items-center gap-1">
-                      <span class="material-symbols-outlined text-[12px]">add_circle</span>
-                      2da Prueba: {{ jugador?.nombrePrueba2 }}
-                    </div>
-                  </td>
-
-                  <td class="p-4 text-center">
-                    <span
-                      [class]="jugador?.estado === 'APROBADO' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'"
-                      class="px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border">
-                      {{ jugador?.estado || 'PENDIENTE' }}
-                    </span>
-                  </td>
-
-                  <td class="p-4 text-center">
-                    <div class="flex items-center justify-center gap-2">
-                      <button (click)="abrirEdicionJugador(jugador)" type="button"
-                        class="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg transition-all cursor-pointer"
-                        title="Editar datos del atleta">
-                        <span class="material-symbols-outlined text-base">edit</span>
-                      </button>
-
-                      <button (click)="solicitarBajaJugador(jugador)" type="button"
-                        class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all cursor-pointer"
-                        title="Dar de baja atleta">
-                        <span class="material-symbols-outlined text-base">delete</span>
-                      </button>
-                    </div>
-                  </td>
-
-                </tr>
-                <tr *ngIf="jugadores.length === 0">
-                  <td colspan="6" class="p-12 text-center text-gray-500 font-medium tracking-wide">
-                    La lista de buena fe está vacía. Use el botón <strong class="text-forja-naranja">"Inscribir
-                      Atleta"</strong> para dar de alta sus primeros cupos.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <section
+        class="bg-forja-dark-card/50 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl min-h-[450px]">
+        <div class="overflow-x-auto rounded-xl border border-white/5">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr
+                class="bg-forja-dark-input/60 border-b border-white/5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <th class="p-4">Apellido y Nombre</th>
+                <th class="p-4">DNI</th>
+                <th class="p-4">Rama Competencia</th>
+                <th class="p-4">Prueba / Modalidad</th>
+                <th class="p-4 text-center">Estado de Habilitación</th>
+                <th class="p-4 text-center">Acciones Operativas</th>
+              </tr>
+            </thead>
+            <tbody class="text-xs font-medium text-gray-200 divide-y divide-white/5">
+              <tr *ngFor="let jugador of jugadores" class="hover:bg-white/[0.01] transition-colors">
+                <td class="p-4 font-bold text-white uppercase">{{ jugador?.apellido }}, {{ jugador?.nombre }}</td>
+                <td class="p-4 font-mono text-gray-400 tracking-wider">{{ jugador?.dni }}</td>
+                <td class="p-4">
+                  <span
+                    class="text-[10px] text-forja-ocre bg-forja-azul/50 border border-white/5 px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider">{{
+                    jugador?.genero }}</span>
+                </td>
+                <td class="p-4 space-y-1">
+                  <div class="text-white font-bold tracking-wide uppercase text-[11px]">{{ jugador?.prueba?.nombrePrueba
+                    || 'Prueba General' }}</div>
+                  <div *ngIf="jugador?.idPrueba2"
+                    class="text-forja-ocre text-[10px] font-medium italic flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[12px]">add_circle</span> 2da Prueba: {{
+                    jugador?.nombrePrueba2 }}
+                  </div>
+                </td>
+                <td class="p-4 text-center">
+                  <span
+                    [class]="jugador?.estado === 'APROBADO' ? 'bg-green-500/10 text-green-400 border-green-500/20' : jugador?.estado === 'RECHAZADO' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'"
+                    class="px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border">
+                    {{ jugador?.estado || 'PENDIENTE' }}
+                  </span>
+                </td>
+                <td class="p-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <button (click)="abrirEdicionJugador(jugador)" type="button"
+                      class="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg transition-all cursor-pointer"
+                      title="Editar datos del atleta"><span
+                        class="material-symbols-outlined text-base">edit</span></button>
+                    <button (click)="solicitarBajaJugador(jugador)" type="button"
+                      class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all cursor-pointer"
+                      title="Dar de baja atleta"><span
+                        class="material-symbols-outlined text-base">delete</span></button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="jugadores.length === 0">
+                <td colspan="6" class="p-12 text-center text-gray-500 font-medium tracking-wide">La lista de buena fe
+                  está vacía. Use el botón <strong class="text-forja-naranja">"Inscribir Atleta"</strong> para dar de
+                  alta sus primeros cupos.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </main>
@@ -385,31 +383,23 @@
     class="fixed inset-0 bg-forja-dark-bg/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 animate-fade-in">
     <div
       class="bg-forja-dark-card border border-red-500/20 rounded-2xl p-6 max-w-[420px] w-full text-center space-y-5 shadow-2xl shadow-red-950/20">
-
       <div
         class="h-14 w-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mx-auto shadow-inner animate-pulse">
         <span class="material-symbols-outlined text-2xl font-bold">warning</span>
       </div>
-
       <div class="space-y-2">
         <h3 class="text-lg font-black text-white tracking-wide">¿Confirmar Baja del Atleta?</h3>
-        <p class="text-xs text-gray-400 leading-relaxed px-2">
-          Está por remover de forma permanente a <strong class="text-forja-naranja font-black">{{ nombreJugadorABorrar
-            }}</strong> de la lista de buena fe. Esta acción destruirá toda su documentación digital del servidor.
-        </p>
+        <p class="text-xs text-gray-400 leading-relaxed px-2">Está por remover de forma permanente a <strong
+            class="text-forja-naranja font-black">{{ nombreJugadorABorrar }}</strong> de la lista de buena fe.</p>
       </div>
-
       <div class="grid grid-cols-2 gap-3 border-t border-white/5 pt-4">
         <button type="button" (click)="mostrarModalConfirmarBorrar = false"
-          class="py-3 rounded-xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/[0.02] cursor-pointer transition-all">
-          MANTENER ATLETA
-        </button>
+          class="py-3 rounded-xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/[0.02] cursor-pointer transition-all">MANTENER
+          ATLETA</button>
         <button type="button" (click)="confirmarBajaJugador()"
-          class="py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider cursor-pointer shadow-md shadow-red-900/20 transition-all">
-          CONFIRMAR BAJA
-        </button>
+          class="py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider cursor-pointer shadow-md shadow-red-900/20 transition-all">CONFIRMAR
+          BAJA</button>
       </div>
-
     </div>
   </div>
 
