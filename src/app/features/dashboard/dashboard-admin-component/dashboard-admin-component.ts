@@ -6,6 +6,7 @@ import { AdminService } from '../../../core/services/admin.service';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DelegacionService } from '../../../core/services/delegacion.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-dashboard-admin-component',
@@ -62,7 +63,7 @@ export class DashboardAdminComponent implements OnInit {
   }
   localidadesProvinciales: any[] = [];
   cargarLocalidadesPublicas(): void {
-    this.http.get<any[]>('http://localhost:3000/api/auth/localidades').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/auth/localidades`).subscribe({
       next: (res) => (this.localidadesProvinciales = res),
       error: (err) => console.error('Error al traer localidades:', err),
     });

@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { toast } from 'ngx-sonner';
 import { MunicipioService } from '../../../core/services/municipio.service';
 import { AuthService } from '../../../core/services/auth.services';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-dashboard-municipio',
@@ -15,7 +16,7 @@ import { AuthService } from '../../../core/services/auth.services';
 })
 export class DashboardMunicipioComponent implements OnInit {
   nombreMunicipioSesion = '';
-  serverUrl = 'http://localhost:3000'; // 🚀 CORREGIDO: Declarado para renderizar las URLs de DNI y PDF
+  serverUrl = environment.serverUrl; // 🚀 CORREGIDO: Declarado para renderizar las URLs de DNI y PDF
 
   subPestanaActiva: 'auditoria' | 'listaBlanca' = 'auditoria';
   cargando = true;

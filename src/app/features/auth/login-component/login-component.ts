@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { toast } from 'ngx-sonner';
 import { Component, OnInit } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login-component',
@@ -50,7 +51,7 @@ export class LoginComponent implements OnInit {
   }
 
   cargarLocalidadesPublicas(): void {
-    this.http.get<any[]>('http://localhost:3000/api/auth/localidades').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/auth/localidades`).subscribe({
       next: (res) => (this.localidadesProvinciales = res),
       error: (err) => console.error('Error al traer localidades:', err),
     });
@@ -122,7 +123,7 @@ export class LoginComponent implements OnInit {
       tokenInvitacion: this.registroForm.value.tokenInvitacion,
     };
 
-    this.http.post('http://localhost:3000/api/auth/register', payload).subscribe({
+    this.http.post(`${environment.apiUrl}/auth/register`, payload).subscribe({
       next: () => {
         this.cargando = false;
         toast.success('¡Registro Exitoso por Lista Blanca!', {
