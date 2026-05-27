@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ConfigEquipoPayload {
   nombreEquipo: string;
-  idDisciplina: number; // 🔥 Sincronizado con la lógica macro
+  idDisciplina: number;
   usuarioId: number;
 }
 
@@ -12,7 +13,8 @@ export interface ConfigEquipoPayload {
   providedIn: 'root',
 })
 export class DelegacionService {
-  private apiUrl = 'http://localhost:3000/api/delegacion';
+  private apiUrl = `${environment.apiUrl}/delegacion`;
+  private reportesUrl = `${environment.apiUrl}/reportes`;
 
   constructor(private http: HttpClient) {}
 
@@ -38,7 +40,7 @@ export class DelegacionService {
   }
 
   descargarReporte(tipo: string, valor: any): Observable<Blob> {
-    return this.http.get(`http://localhost:3000/api/reportes/generar?tipo=${tipo}&valor=${valor}`, {
+    return this.http.get(`${this.reportesUrl}/generar?tipo=${tipo}&valor=${valor}`, {
       responseType: 'blob',
     });
   }

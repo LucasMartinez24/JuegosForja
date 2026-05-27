@@ -1,4 +1,7 @@
 export const environment = {
-  production: false,
-  serverUrl: 'http://localhost:3000',
+  production: true,
+
+  apiUrl: '/api',
+
+  serverUrl: '', // Vacío para rutas relativas
 };

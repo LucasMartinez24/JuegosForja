@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
 
   constructor(private http: HttpClient) {}
 
@@ -16,7 +17,7 @@ export class AuthService {
       tap((res) => {
         if (res && res.token) {
           localStorage.setItem('forja_token', res.token);
-          localStorage.setItem('forja_role', res.usuario.rol); // ADMIN, EQUIPO o MUNICIPIO
+          localStorage.setItem('forja_role', res.usuario.rol);
           localStorage.setItem('forja_user', JSON.stringify(res.usuario));
         }
       }),

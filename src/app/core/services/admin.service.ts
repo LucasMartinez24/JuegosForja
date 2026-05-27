@@ -2,14 +2,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AdminService {
-  private apiUrl = 'http://localhost:3000/api/admin';
-  // Ruta base para renderizar las imágenes/PDFs desde el backend
-  public serverUrl = 'http://localhost:3000';
+  private apiUrl = `${environment.apiUrl}/admin`;
+  public serverUrl = environment.serverUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -17,15 +17,16 @@ export class AdminService {
     return this.http.get<any[]>(`${this.apiUrl}/arbol-delegaciones`);
   }
 
-  // En tu admin.service.ts
   dictaminarAtleta(idAtleta: number, estado: string): Observable<any> {
-    // ¿Tu backend espera el ID en la URL o en el cuerpo?
-    // Si en Express pusiste /api/admin/dictaminar/:id, usa esta URL:
-    return this.http.put(`${this.serverUrl}/api/admin/dictaminar/${idAtleta}`, { estado });
+    return this.http.put(`${environment.apiUrl}/admin/dictaminar/${idAtleta}`, {
+      estado,
+    });
   }
+
   eliminarEquipo(idEquipo: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/eliminar-equipo/${idEquipo}`);
   }
+
   obtenerLocalidadesYTokens(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/localidades-tokens`);
   }
