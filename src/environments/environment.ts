@@ -1,7 +1,5 @@
 export const environment = {
   production: true,
-
-  apiUrl: '/api',
-
-  serverUrl: '', // Vacío para rutas relativas
+  apiUrl: 'https://api.juegosforja.online/api',
+  serverUrl: 'https://api.juegosforja.online',
 };
