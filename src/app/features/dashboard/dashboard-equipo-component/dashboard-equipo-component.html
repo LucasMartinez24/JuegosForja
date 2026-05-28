@@ -97,8 +97,10 @@
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
           <div>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cupos Permitidos</p>
-            <h3 class="text-2xl font-black text-white mt-1">{{ maxJugadoresPermitidos }} <span
-                class="text-xs font-normal text-gray-500">Máximos</span></h3>
+            <h3 class="text-2xl font-black text-white mt-1">
+              {{ esAtletismo ? 'ILIMITADOS' : maxJugadoresPermitidos }}
+              <span class="text-xs font-normal text-gray-500" *ngIf="!esAtletismo">Máximos</span>
+            </h3>
           </div>
           <span class="material-symbols-outlined text-gray-600 text-3xl">assignment</span>
         </div>
@@ -115,8 +117,10 @@
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
           <div>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vacantes Libres</p>
-            <h3 class="text-2xl font-black text-emerald-400 mt-1">{{ cuposRestantes }} <span
-                class="text-xs font-normal text-gray-500">Disponibles</span></h3>
+            <h3 class="text-2xl font-black text-emerald-400 mt-1">
+              {{ esAtletismo ? 'LIBRE' : cuposRestantes }}
+              <span class="text-xs font-normal text-gray-500" *ngIf="!esAtletismo">Disponibles</span>
+            </h3>
           </div>
           <span class="material-symbols-outlined text-emerald-500/40 text-3xl">add_moderator</span>
         </div>
@@ -215,8 +219,9 @@
                       class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none">
                       <option value="" disabled selected>{{ jugadorForm.get('genero')?.value ? 'Seleccionar Instancia
                         Oficial' : '⚠️ Primero elija una Rama/Género arriba' }}</option>
-                      <option *ngFor="let p of pruebasFiltradas" [value]="p.id">{{ p.nombrePrueba }} (Cupo Máx: {{
-                        p.maxJugadores }})</option>
+                      <option *ngFor="let p of pruebasFiltradas" [value]="p.id">
+                        {{ p.nombrePrueba }} <span *ngIf="!esAtletismo">(Cupo Máx: {{ p.maxJugadores }})</span>
+                      </option>
                     </select>
                     <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400"><span
                         class="material-symbols-outlined text-base">keyboard_arrow_down</span></div>
@@ -300,14 +305,15 @@
                   class="px-4 py-2.5 rounded-xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white cursor-pointer transition-colors">
                   Cancelar
                 </button>
-                <button [disabled]="jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion) || procesandoBoton"
+                <button
+                  [disabled]="jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion && !esAtletismo) || procesandoBoton"
                   type="submit"
-                  [class]="(jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion)) ? 'bg-gray-700 text-gray-500 border border-white/5 cursor-not-allowed' : 'bg-gradient-to-r from-forja-naranja to-orange-600 text-white cursor-pointer shadow-md'"
+                  [class]="(jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion && !esAtletismo)) ? 'bg-gray-700 text-gray-500 border border-white/5 cursor-not-allowed' : 'bg-gradient-to-r from-forja-naranja to-orange-600 text-white cursor-pointer shadow-md'"
                   class="px-5 py-2.5 font-bold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center gap-2">
                   <span class="material-symbols-outlined text-sm font-bold" *ngIf="!procesandoBoton">
-                    {{ cuposRestantes <= 0 && !modoEdicion ? 'block' : 'save' }} </span>
-                      {{ procesandoBoton ? 'GUARDANDO...' : (cuposRestantes <= 0 && !modoEdicion ? 'SIN VACANTES'
-                        : 'REGISTRAR ATLETA' ) }} </button>
+                    {{ (cuposRestantes <= 0 && !modoEdicion && !esAtletismo) ? 'block' : 'save' }} </span>
+                      {{ procesandoBoton ? 'GUARDANDO...' : ((cuposRestantes <= 0 && !modoEdicion && !esAtletismo)
+                        ? 'SIN VACANTES' : 'REGISTRAR ATLETA' ) }} </button>
               </div>
             </form>
           </div>

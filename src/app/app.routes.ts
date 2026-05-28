@@ -4,6 +4,7 @@ import { DashboardEquipoComponent } from './features/dashboard/dashboard-equipo-
 import { equipoGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { municipioGuard } from './core/guards/municipio.guard'; // <-- 🚀 Importamos el nuevo Guard
+import { CambiarClaveObligatoriaComponent } from './features/dashboard/cambiar-clave-obligatoria-component/cambiar-clave-obligatoria-component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,6 +30,10 @@ export const routes: Routes = [
         (m) => m.DashboardMunicipioComponent, // (Creamos este componente en el siguiente paso)
       ),
     canActivate: [municipioGuard],
+  },
+  {
+    path: 'auth/cambiar-clave-obligatoria',
+    component: CambiarClaveObligatoriaComponent,
   },
   { path: '**', redirectTo: 'login' },
 ];

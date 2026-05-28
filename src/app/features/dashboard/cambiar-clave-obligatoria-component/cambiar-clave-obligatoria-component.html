@@ -1,0 +1,71 @@
+<div
+  class="min-h-screen bg-forja-dark-bg font-epilogue text-gray-200 flex items-center justify-center p-4 selection:bg-forja-naranja selection:text-white relative overflow-hidden">
+
+  <div
+    class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-azul/10 blur-[140px] pointer-events-none">
+  </div>
+  <div
+    class="absolute bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-forja-naranja/5 blur-[150px] pointer-events-none">
+  </div>
+
+  <main
+    class="w-full max-w-[520px] bg-forja-dark-card/40 backdrop-blur-xl rounded-2xl border border-white/5 shadow-2xl p-8 md:p-10 relative z-10 space-y-6">
+
+    <header class="text-center space-y-2">
+      <div
+        class="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-500 to-forja-naranja flex items-center justify-center text-white mx-auto shadow-lg shadow-forja-naranja/20">
+        <span class="material-symbols-outlined text-2xl font-bold">admin_panel_settings</span>
+      </div>
+      <h1 class="text-xl font-black text-white tracking-wide uppercase">Actualización de Seguridad</h1>
+      <p class="text-xs text-forja-ocre font-bold uppercase tracking-wider">Usuario: {{ usernameUsuario }}</p>
+      <div class="p-3 bg-red-500/10 border border-red-500/10 rounded-xl text-left mt-2">
+        <p class="text-[11px] text-red-400 leading-relaxed">
+          ⚠️ <b>Directiva de la Secretaría:</b> Detectamos que está utilizando la contraseña genérica provisional. Por
+          normativas de seguridad del sistema, debe personalizarla para activar su panel operativo.
+        </p>
+      </div>
+    </header>
+
+    <form [formGroup]="claveForm" (ngSubmit)="onCambiarClaveSubmit()" class="space-y-4">
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-forja-ocre">lock</span> Nueva Contraseña
+        </label>
+        <input formControlName="nuevaPassword" type="password"
+          class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
+          placeholder="Mínimo 6 caracteres" />
+        <span *ngIf="claveForm.get('nuevaPassword')?.touched && claveForm.get('nuevaPassword')?.errors?.['minlength']"
+          class="text-[10px] text-forja-naranja font-bold">La clave es muy corta (mínimo 6 letras o números).</span>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-forja-ocre">lock_reset</span> Confirmar Nueva Contraseña
+        </label>
+        <input formControlName="confirmarPassword" type="password"
+          class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
+          placeholder="Repita la contraseña" />
+
+        <span *ngIf="claveForm.touched && claveForm.hasError('noCoincide')"
+          class="text-[10px] text-forja-naranja font-bold block mt-1">
+          ❌ Las contraseñas ingresadas no coinciden.
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 border-t border-white/5 pt-5 mt-2">
+        <button type="button" (click)="cancelar()" [disabled]="procesando"
+          class="py-3.5 rounded-xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/[0.02] cursor-pointer transition-all uppercase tracking-wider">
+          Salir
+        </button>
+
+        <button [disabled]="claveForm.invalid || procesando" type="submit"
+          class="py-3.5 bg-gradient-to-r from-forja-naranja to-orange-600 disabled:from-forja-azul/40 disabled:text-gray-500 text-white font-black rounded-xl text-xs uppercase tracking-widest shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2">
+          <span *ngIf="!procesando">ACTIVAR PANEL</span>
+          <span *ngIf="procesando" class="flex items-center gap-1 animate-pulse">GUARDANDO...</span>
+        </button>
+      </div>
+
+    </form>
+  </main>
+</div>

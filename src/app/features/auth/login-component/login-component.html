@@ -11,6 +11,7 @@
   <main
     class="w-full max-w-[1200px] bg-forja-dark-card/40 backdrop-blur-xl rounded-2xl overflow-hidden editorial-premium-shadow flex flex-col md:flex-row min-h-[750px] border border-white/5 relative z-10 m-4 md:m-0">
 
+    <!-- SECCIÓN IZQUIERDA: IDENTIDAD INSTITUCIONAL -->
     <section
       class="md:w-5/12 relative bg-forja-azul flex flex-col justify-between p-8 md:p-12 text-white overflow-hidden min-h-[420px] md:min-h-auto border-b md:border-b-0 md:border-r border-white/5">
       <div class="absolute inset-0 z-0 select-none pointer-events-none">
@@ -32,8 +33,10 @@
       </div>
     </section>
 
+    <!-- SECCIÓN DERECHA: FLUJO OPERATIVO -->
     <section class="md:w-7/12 flex flex-col bg-forja-dark-card/70 p-8 md:p-16 justify-center relative">
 
+      <!-- SELECTOR DE PESTAÑAS -->
       <div
         class="grid grid-cols-2 p-1 bg-forja-dark-input border border-white/5 rounded-xl mb-8 max-w-[360px] w-full mx-auto md:mx-0">
         <button (click)="cambiarPestana('login')"
@@ -50,6 +53,7 @@
 
       <div class="relative min-h-[460px] overflow-hidden pr-1">
 
+        <!-- PANEL DE ACCESO (LOGIN) -->
         <div
           [class]="pestanaActiva === 'login' ? 'opacity-100 translate-x-0 pointer-events-auto relative z-10' : 'opacity-0 -translate-x-8 pointer-events-none absolute z-0'"
           class="w-full space-y-6 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
@@ -96,13 +100,14 @@
           </form>
         </div>
 
+        <!-- PANEL DE ALTA DIRECTA (REGISTRO) -->
         <div
           [class]="pestanaActiva === 'registro' ? 'opacity-100 translate-x-0 pointer-events-auto relative z-10' : 'opacity-0 translate-x-8 pointer-events-none absolute z-0'"
           class="w-full space-y-5 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
           <header>
             <h2 class="text-2xl font-black text-white tracking-wide">Crear Cuenta</h2>
-            <p class="text-forja-ocre text-xs mt-1 font-medium">Requiere Token de Validación Municipal asignado por la
-              Secretaría.</p>
+            <p class="text-forja-ocre text-xs mt-1 font-medium">Inscripción directa de representantes delegados de
+              clubes.</p>
           </header>
 
           <form [formGroup]="registroForm" (ngSubmit)="onRegistroSubmit()" class="space-y-4">
@@ -158,18 +163,6 @@
               </div>
 
               <div class="flex flex-col gap-1.5">
-                <label
-                  class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
-                  <span class="material-symbols-outlined text-sm">vpn_key</span> Token de Lista Blanca
-                </label>
-                <input formControlName="tokenInvitacion" type="text"
-                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-forja-ocre/30 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600 uppercase font-mono"
-                  placeholder="FORJA-XXXX-XXXX" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="flex flex-col gap-1.5">
                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-sm text-forja-ocre">account_circle</span> Nombre de
                   Usuario
@@ -178,19 +171,52 @@
                   class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
                   placeholder="Ej. club_gorriti" />
               </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-sm text-forja-ocre">lock</span> Contraseña (Mín. 6)
-                </label>
-                <input formControlName="password" type="password"
-                  class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
-                  placeholder="••••••••" />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-forja-ocre">lock</span> Contraseña de Acceso (Mín. 6
+                caracteres)
+              </label>
+              <input formControlName="password" type="password"
+                class="w-full px-4 py-3 bg-forja-dark-input/50 border border-white/10 focus:border-forja-naranja transition-all outline-none rounded-xl text-sm text-white placeholder-gray-600"
+                placeholder="••••••••" />
+            </div>
+
+            <!-- 🚀 COMPONENTE DE CARGA INYECTADO: DOCUMENTACIÓN OFICIAL DEL DELEGADO -->
+            <div class="border-t border-white/5 pt-3 space-y-2">
+              <label class="text-[10px] font-bold text-forja-naranja uppercase tracking-widest block mb-1">
+                Identificación Oficial del Delegado (Obligatorio)
+              </label>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Frente DNI -->
+                <div class="flex flex-col gap-1.5">
+                  <label
+                    class="w-full px-3 py-3 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-forja-naranja rounded-xl text-xs text-gray-400 text-center cursor-pointer transition-all truncate block">
+                    <span class="material-symbols-outlined text-xs align-middle mr-1 text-forja-ocre">upload_file</span>
+                    {{ fileRepFrente ? fileRepFrente.name : 'Subir DNI Frente' }}
+                    <input type="file" (change)="onFileRepresentanteSelected($event, 'frente')"
+                      accept="image/*,application/pdf" class="hidden" />
+                  </label>
+                </div>
+
+                <!-- Dorso DNI -->
+                <div class="flex flex-col gap-1.5">
+                  <label
+                    class="w-full px-3 py-3 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-forja-naranja rounded-xl text-xs text-gray-400 text-center cursor-pointer transition-all truncate block">
+                    <span class="material-symbols-outlined text-xs align-middle mr-1 text-forja-ocre">upload_file</span>
+                    {{ fileRepDorso ? fileRepDorso.name : 'Subir DNI Dorso' }}
+                    <input type="file" (change)="onFileRepresentanteSelected($event, 'dorso')"
+                      accept="image/*,application/pdf" class="hidden" />
+                  </label>
+                </div>
               </div>
             </div>
 
             <button [disabled]="registroForm.invalid || cargando" type="submit"
               class="w-full py-4 bg-gradient-to-r from-forja-naranja to-orange-600 hover:from-orange-600 hover:to-red-600 disabled:from-forja-azul/40 disabled:to-forja-azul/40 disabled:text-gray-500 text-white font-bold rounded-xl shadow-lg tracking-wider transition-all duration-300 cursor-pointer text-sm mt-4 flex items-center justify-center gap-2">
-              <span>VALIDAR TOKEN Y REGISTRAR</span>
+              <span>REGISTRAR CLUB Y ACTIVAR CUENTA</span>
               <span class="material-symbols-outlined text-sm">verified_user</span>
             </button>
           </form>
@@ -206,6 +232,7 @@
     </section>
   </main>
 
+  <!-- PIE DE PÁGINA FIJO -->
   <footer class="fixed bottom-4 right-4 hidden md:flex items-center gap-4 text-forja-ocre opacity-40 select-none">
     <span class="text-[10px] font-bold uppercase tracking-widest text-white">© 2026 Juegos Forja - REC
       Technologies</span>

@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { toast } from 'ngx-sonner';
 import { MunicipioService } from '../../../core/services/municipio.service';
 import { AuthService } from '../../../core/services/auth.services';
-import { environment } from '../../../../environments/environment';
+import { AdminService } from '../../../core/services/admin.service';
 
 @Component({
   selector: 'app-dashboard-municipio',
@@ -16,22 +16,26 @@ import { environment } from '../../../../environments/environment';
 })
 export class DashboardMunicipioComponent implements OnInit {
   nombreMunicipioSesion = '';
-  serverUrl = environment.serverUrl; // 🚀 CORREGIDO: Declarado para renderizar las URLs de DNI y PDF
-
-  subPestanaActiva: 'auditoria' | 'listaBlanca' = 'auditoria';
   cargando = true;
-  procesandoBoton = false;
-  procesandoDictamen = false; // 🚀 CORREGIDO: Bandera de carga para los botones del modal
+  procesandoDictamen = false;
 
   disciplinas: any[] = [];
-  ultimosTokensGenerados: any[] = [];
   disciplinasExpandidas: { [key: string]: boolean } = {};
 
   mostrarModalAuditoria = false;
   atletaSeleccionado: any = null;
 
+  mostrarModalDelegado = false;
+  equipoSeleccionado: any = null;
+
+  // 🚀 NUEVO: Control de Modal de Confirmación Estético
+  mostrarModalConfirmarEliminar = false;
+  equipoParaEliminar: { idEquipo: string; nombreEquipo: string } | null = null;
+  procesandoEliminacion = false;
+
   constructor(
     private municipioService: MunicipioService,
+    private adminService: AdminService,
     private authService: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef,
@@ -47,107 +51,111 @@ export class DashboardMunicipioComponent implements OnInit {
     if (usuario) {
       this.nombreMunicipioSesion = usuario.localidadNombre?.toUpperCase() || 'COORDINACIÓN LOCAL';
     } else {
-      console.warn('⚠️ Sesión inválida detectada en el panel municipal.');
       this.router.navigate(['/login']);
     }
   }
 
   cargarPanelMunicipal(): void {
     this.cargando = true;
-
     this.municipioService.obtenerArbolDelegaciones().subscribe({
       next: (res) => {
-        setTimeout(() => {
-          this.disciplinas = res || [];
-          this.cargando = false;
-          this.cdr.detectChanges();
-        }, 0);
+        this.disciplinas = res || [];
+        this.cargando = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.cargando = false;
-        toast.error('Error de red', {
-          description: 'No se pudo sincronizar las listas de buena fe.',
-        });
+        toast.error('Error de red', { description: 'No se pudo sincronizar las listas.' });
         this.cdr.detectChanges();
       },
     });
+  }
 
-    this.municipioService.obtenerTokensEmitidos().subscribe({
+  abrirAuditoriaDelegado(equipo: any): void {
+    this.equipoSeleccionado = {
+      idEquipo: equipo.idEquipo,
+      nombreEquipo: equipo.nombreEquipo,
+      usuarioResponsable: null,
+    };
+    this.mostrarModalDelegado = true;
+    this.cdr.detectChanges();
+
+    this.adminService.obtenerDelegadoPorEquipo(equipo.idEquipo).subscribe({
       next: (res) => {
-        setTimeout(() => {
-          this.ultimosTokensGenerados = res || [];
-          this.cdr.detectChanges();
-        }, 0);
+        this.equipoSeleccionado.usuarioResponsable = res.usuarioResponsable;
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('❌ Error al recuperar pool de claves:', err),
+      error: (err) => {
+        toast.error('Ficha no disponible', { description: err.error?.error });
+      },
     });
   }
 
-  cambiarSubPestana(pestana: 'auditoria' | 'listaBlanca'): void {
-    this.subPestanaActiva = pestana;
+  cerrarAuditoriaDelegado(): void {
+    this.mostrarModalDelegado = false;
+    this.equipoSeleccionado = null;
     this.cdr.detectChanges();
   }
 
-  emitirToken(): void {
-    if (this.procesandoBoton) return;
-    this.procesandoBoton = true;
+  // 🚀 INTERCEPTOR: En vez de confirm(), levanta nuestro modal cyberpunk de peligro
+  eliminarDesdeModalDelegado(): void {
+    if (!this.equipoSeleccionado) return;
 
-    this.municipioService.generarToken().subscribe({
-      next: (nuevoToken) => {
-        this.procesandoBoton = false;
-        if (nuevoToken && nuevoToken.token) {
-          navigator.clipboard.writeText(nuevoToken.token);
-          toast.success('Token Emitido', {
-            description: `Código ${nuevoToken.token} copiado al portapapeles.`,
-            duration: 4000,
-          });
+    this.equipoParaEliminar = {
+      idEquipo: this.equipoSeleccionado.idEquipo,
+      nombreEquipo: this.equipoSeleccionado.nombreEquipo,
+    };
 
-          this.ultimosTokensGenerados.unshift(nuevoToken);
-          this.cdr.detectChanges();
-        }
+    this.mostrarModalDelegado = false; // 1. Cerramos el visor de DNI
+    this.cdr.detectChanges();
+
+    // 🚀 SOLUCIÓN: Separamos los contextos de renderizado
+    setTimeout(() => {
+      this.mostrarModalConfirmarEliminar = true;
+      this.cdr.detectChanges();
+    }, 0);
+  }
+
+  // 🚀 EJECUCIÓN FINAL DE PURGA MUNICIPAL
+  confirmarEliminacionEfectiva(): void {
+    if (!this.equipoParaEliminar || this.procesandoEliminacion) return;
+    this.procesandoEliminacion = true;
+
+    this.adminService.eliminarEquipo(this.equipoParaEliminar.idEquipo).subscribe({
+      next: (res) => {
+        toast.success('Delegación Purgada', { description: res.mensaje });
+        this.cerrarModalConfirmar();
+        this.cargarPanelMunicipal();
       },
       error: (err) => {
-        this.procesandoBoton = false;
-        toast.error('Error en canal de firmas', {
-          description: err.error?.error || 'No se pudo generar.',
-        });
-        this.cdr.detectChanges();
+        this.procesandoEliminacion = false;
+        toast.error('Error operativo', { description: err.error?.error || 'No se pudo borrar.' });
       },
     });
   }
 
-  /**
-   * 🚀 NUEVO MÉTODO: Ejecuta la aprobación o rechazo de la ficha médica desde el modal
-   */
-  /**
-   * Ejecuta la aprobación o rechazo de la ficha médica desde el modal
-   */
+  cerrarModalConfirmar(): void {
+    this.mostrarModalConfirmarEliminar = false;
+    this.equipoParaEliminar = null;
+    this.procesandoEliminacion = false;
+    this.cdr.detectChanges();
+  }
+
   ejecutarDictamen(estado: 'APROBADO' | 'RECHAZADO'): void {
     if (!this.atletaSeleccionado || this.procesandoDictamen) return;
     this.procesandoDictamen = true;
 
-    // Guardamos el ID antes de cerrar para la petición
-    const idAtleta = this.atletaSeleccionado.id;
-
-    this.municipioService.dictaminarAtleta(idAtleta, estado).subscribe({
-      next: (res) => {
-        // 🚀 OPTIMIZACIÓN: Cerramos el modal inmediatamente aquí
+    this.municipioService.dictaminarAtleta(this.atletaSeleccionado.id, estado).subscribe({
+      next: () => {
         this.mostrarModalAuditoria = false;
         this.atletaSeleccionado = null;
         this.procesandoDictamen = false;
-
-        toast.success(`Ficha médica evaluada`, {
-          description: `El deportista quedó en estado: ${estado}.`,
-        });
-
-        // Refrescamos el panel para actualizar los contadores del árbol
+        toast.success(`Ficha médica evaluada`, { description: `Estado: ${estado}.` });
         this.cargarPanelMunicipal();
       },
       error: (err) => {
         this.procesandoDictamen = false;
-        toast.error('Error al procesar dictamen', {
-          description: err.error?.error || 'No se pudo guardar la resolución.',
-        });
+        toast.error('Error al guardar dictamen', { description: err.error?.error });
         this.cdr.detectChanges();
       },
     });

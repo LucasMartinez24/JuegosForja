@@ -178,12 +178,22 @@ export class DashboardEquipoComponent implements OnInit {
     }
   }
 
+  // src/app/modules/municipio/dashboard-equipo/dashboard-equipo.component.ts
+
   recalcularContadores(): void {
     this.jugadoresInscriptosCount = this.jugadores.length;
-    const pruebaBase = this.pruebasFiltradasPorDisciplina[0];
-    this.maxJugadoresPermitidos = pruebaBase ? pruebaBase.maxJugadores : 12;
-    const restante = this.maxJugadoresPermitidos - this.jugadoresInscriptosCount;
-    this.cuposRestantes = restante < 0 ? 0 : restante;
+
+    if (this.esAtletismo) {
+      // 🚀 Si es Atletismo, rompemos los topes en la UI
+      this.maxJugadoresPermitidos = 999; // Representación de cupo ilimitado
+      this.cuposRestantes = 999;
+    } else {
+      // Mantenemos la lógica estricta para las demás disciplinas convencionales/adaptadas
+      const pruebaBase = this.pruebasFiltradasPorDisciplina[0];
+      this.maxJugadoresPermitidos = pruebaBase ? pruebaBase.maxJugadores : 12;
+      const restante = this.maxJugadoresPermitidos - this.jugadoresInscriptosCount;
+      this.cuposRestantes = restante < 0 ? 0 : restante;
+    }
   }
 
   onFileSelected(event: Event, tipoDoc: string): void {

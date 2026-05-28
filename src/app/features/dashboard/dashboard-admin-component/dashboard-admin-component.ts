@@ -1,3 +1,4 @@
+// src/app/modules/admin/dashboard-admin/dashboard-admin.component.ts
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,20 +21,25 @@ export class DashboardAdminComponent implements OnInit {
   cargando = true;
   procesandoDictamen = false;
 
-  // 🚀 VARIABLES DE NAVEGACIÓN POR PESTAÑAS Y HISTORIAL VISUAL DE TOKENS
-  subPestanaActiva: 'auditoria' | 'listaBlanca' | 'cuentas' = 'auditoria';
-  ultimosTokensGenerados: any[] = [];
-
+  subPestanaActiva: 'auditoria' | 'cuentas' = 'auditoria';
   municipioForm!: FormGroup;
   procesandoMunicipioBtn = false;
-  listadoLocalidadesMapeadas: any[] = [];
-  listadoLocalidadesCombo: any[] = [];
+  localidadesProvinciales: any[] = [];
 
   disciplinasExpandidas: { [key: string]: boolean } = {};
   municipiosExpandidos: { [key: string]: boolean } = {};
 
   mostrarModalAuditoria = false;
   atletaSeleccionado: any = null;
+
+  mostrarModalDelegado = false;
+  equipoSeleccionado: any = null;
+
+  // 🚀 NUEVO: Propiedades para Modal de Confirmación Estético en Admin
+  mostrarModalConfirmarEliminar = false;
+  equipoParaEliminar: { idEquipo: string; nombreEquipo: string } | null = null;
+  procesandoEliminacion = false;
+
   serverUrl = '';
 
   constructor(
@@ -58,33 +64,19 @@ export class DashboardAdminComponent implements OnInit {
     });
 
     this.cargarMapaProvincial();
-    this.sincronizarListaBlancaGeo();
     this.cargarLocalidadesPublicas();
   }
-  localidadesProvinciales: any[] = [];
+
   cargarLocalidadesPublicas(): void {
     this.http.get<any[]>(`${environment.apiUrl}/auth/localidades`).subscribe({
       next: (res) => (this.localidadesProvinciales = res),
       error: (err) => console.error('Error al traer localidades:', err),
     });
   }
-  // Changer de pestaña fluido
-  cambiarSubPestana(pestana: 'auditoria' | 'listaBlanca' | 'cuentas'): void {
+
+  cambiarSubPestana(pestana: 'auditoria' | 'cuentas'): void {
     this.subPestanaActiva = pestana;
     this.cdr.detectChanges();
-  }
-
-  sincronizarListaBlancaGeo(): void {
-    this.adminService.obtenerLocalidadesYTokens().subscribe({
-      next: (res) => {
-        this.listadoLocalidadesMapeadas = res || [];
-        this.listadoLocalidadesCombo = this.listadoLocalidadesMapeadas.filter(
-          (l) => !l.tieneCuenta,
-        );
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('❌ Error geográfico:', err),
-    });
   }
 
   onCrearCuentaMunicipio(): void {
@@ -93,48 +85,16 @@ export class DashboardAdminComponent implements OnInit {
       return;
     }
     this.procesandoMunicipioBtn = true;
-
     this.adminService.crearUsuarioMunicipio(this.municipioForm.value).subscribe({
       next: (res) => {
         toast.success('Cuenta Creada', { description: res.mensaje });
         this.municipioForm.reset({ idLocalidad: '' });
         this.procesandoMunicipioBtn = false;
-        this.sincronizarListaBlancaGeo();
       },
       error: (err) => {
         this.procesandoMunicipioBtn = false;
         toast.error('No se pudo procesar', { description: err.error?.error });
       },
-    });
-  }
-
-  emitirTokenDeListaBlanca(idLocalidad: any): void {
-    if (!idLocalidad) return;
-
-    const idNumerico = parseInt(idLocalidad, 10);
-    const localidadObj = this.listadoLocalidadesMapeadas.find((l) => l.id === idNumerico);
-
-    this.adminService.generarTokenMunicipio(idNumerico).subscribe({
-      next: (res) => {
-        if (res && res.token) {
-          navigator.clipboard.writeText(res.token.token);
-
-          toast.success('Token Copiado', {
-            description: `Clave: ${res.token.token}`,
-            duration: 4000,
-          });
-
-          // 🚀 INYECCIÓN VISUAL DE HISTORIAL: Agregamos el objeto token al frente del panel lateral
-          const tokenConDatosLocalidad = {
-            ...res.token,
-            localidad: { nombre: localidadObj ? localidadObj.nombre : 'Sede Comunal' },
-          };
-          this.ultimosTokensGenerados.unshift(tokenConDatosLocalidad);
-
-          this.sincronizarListaBlancaGeo();
-        }
-      },
-      error: (err) => console.error('❌ ERROR AL EMITIR TOKEN:', err),
     });
   }
 
@@ -146,52 +106,100 @@ export class DashboardAdminComponent implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.cargando = false;
-        toast.error('Error de red', { description: 'No se pudo sincronizar.' });
+        toast.error('Error de red', { description: 'No se pudo sincronizar el mapa deportivo.' });
       },
     });
   }
 
+  // 🚀 INTERCEPTOR INTERFAZ: Levanta el modal en vez de disparar confirm() de Windows
   eliminarDelegacionFalsa(idEquipo: string, nombreEquipo: string): void {
-    const confirmar = confirm(`⚠️ ¿Está seguro de eliminar la delegación "${nombreEquipo}"?`);
-    if (!confirmar) return;
+    this.equipoParaEliminar = { idEquipo, nombreEquipo };
+    this.mostrarModalConfirmarEliminar = true;
+    this.cdr.detectChanges();
+  }
 
+  eliminarDesdeModalDelegado(): void {
+    if (!this.equipoSeleccionado) return;
+
+    // Guardamos los datos antes de apagar el modal
+    this.equipoParaEliminar = {
+      idEquipo: this.equipoSeleccionado.idEquipo,
+      nombreEquipo: this.equipoSeleccionado.nombreEquipo,
+    };
+
+    this.mostrarModalDelegado = false; // 1. Cerramos el visor de DNI
+    this.cdr.detectChanges(); // Forzamos limpieza inmediata
+
+    // 🚀 SOLUCIÓN: Desplazamos la apertura al siguiente tick del ciclo de vida
+    setTimeout(() => {
+      this.mostrarModalConfirmarEliminar = true;
+      this.cdr.detectChanges();
+    }, 0);
+  }
+
+  // 🚀 ADJUDICACIÓN DE BAJA PROVINCIAL FINAL
+  confirmarEliminacionEfectiva(): void {
+    if (!this.equipoParaEliminar || this.procesandoEliminacion) return;
+    this.procesandoEliminacion = true;
+
+    const idTarget = this.equipoParaEliminar.idEquipo;
     const resguardoArbol = JSON.parse(JSON.stringify(this.disciplinas));
+
+    // Remoción optimista visual
     this.disciplinas.forEach((disc) => {
       disc.municipios.forEach((mun: any) => {
-        mun.equipos = mun.equipos.filter((eq: any) => eq.idEquipo !== idEquipo);
+        mun.equipos = mun.equipos.filter((eq: any) => eq.idEquipo !== idTarget);
       });
     });
     this.cdr.detectChanges();
 
-    this.adminService.eliminarEquipo(idEquipo).subscribe({
-      next: (res) => toast.success('Delegación Eliminada', { description: res.mensaje }),
+    this.adminService.eliminarEquipo(idTarget).subscribe({
+      next: (res) => {
+        toast.success('Delegación Eliminada', { description: res.mensaje });
+        this.cerrarModalConfirmar();
+      },
       error: (err) => {
-        this.disciplinas = resguardoArbol;
+        this.disciplinas = resguardoArbol; // Rollback
+        this.procesandoEliminacion = false;
         this.cdr.detectChanges();
-        toast.error('Error', { description: err.error?.error });
+        toast.error('Error', { description: err.error?.error || 'No se pudo remover el club.' });
       },
     });
   }
 
-  descargarReporte(tipo: string, valor: any): void {
-    const idValido = valor ?? (valor?.id || valor?.idDisciplina);
-    if (!idValido) return;
+  cerrarModalConfirmar(): void {
+    this.mostrarModalConfirmarEliminar = false;
+    this.equipoParaEliminar = null;
+    this.procesandoEliminacion = false;
+    this.cdr.detectChanges();
+  }
 
-    this.delegacionService.descargarReporte(tipo, idValido).subscribe({
-      next: (blob) => this.forzarDescarga(blob, `Reporte_${tipo}_${idValido}.xlsx`),
-      error: () => toast.error('Error al generar el archivo'),
+  abrirAuditoriaDelegado(equipo: any): void {
+    this.equipoSeleccionado = {
+      idEquipo: equipo.idEquipo,
+      nombreEquipo: equipo.nombreEquipo,
+      usuarioResponsable: null,
+    };
+    this.mostrarModalDelegado = true;
+    this.cdr.detectChanges();
+
+    this.adminService.obtenerDelegadoPorEquipo(equipo.idEquipo).subscribe({
+      next: (res) => {
+        this.equipoSeleccionado.usuarioResponsable = res.usuarioResponsable;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        toast.error('Ficha no disponible', { description: err.error?.error });
+      },
     });
   }
 
-  private forzarDescarga(blob: Blob, nombre: string) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = nombre;
-    a.click();
-    window.URL.revokeObjectURL(url);
+  cerrarAuditoriaDelegado(): void {
+    this.mostrarModalDelegado = false;
+    this.equipoSeleccionado = null;
+    this.cdr.detectChanges();
   }
 
   toggleDisciplina(discNombre: string): void {
@@ -233,19 +241,20 @@ export class DashboardAdminComponent implements OnInit {
           }
         });
       });
-
-      disc.totalPendientes = disc.municipios.reduce((accMun: number, m: any) => {
-        return accMun + m.equipos.reduce((accEq: number, e: any) => accEq + e.atletasPendientes, 0);
-      }, 0);
+      disc.totalPendientes = disc.municipios.reduce(
+        (acc: number, m: any) =>
+          acc + m.equipos.reduce((a: number, e: any) => a + e.atletasPendientes, 0),
+        0,
+      );
     });
 
     this.cerrarAuditoria();
     this.cdr.detectChanges();
 
     this.adminService.dictaminarAtleta(idAtleta, estado).subscribe({
-      next: (res) => {
+      next: () => {
         toast.success(`Dictamen Procesado`, {
-          description: `El atleta fue marcado como ${estado.toLowerCase()} con éxito.`,
+          description: `Atleta marcado como ${estado.toLowerCase()}.`,
         });
         this.procesandoDictamen = false;
       },
