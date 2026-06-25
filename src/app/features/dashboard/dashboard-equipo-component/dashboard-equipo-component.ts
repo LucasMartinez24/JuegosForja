@@ -1,4 +1,3 @@
-// src/app/modules/municipio/dashboard-equipo/dashboard-equipo.component.ts
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -7,7 +6,7 @@ import { toast } from 'ngx-sonner';
 import { DelegacionService } from '../../../core/services/delegacion.service';
 
 @Component({
-  selector: 'app-dashboard-equipo',
+  selector: 'app-dashboard-equipo-component',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './dashboard-equipo-component.html',
@@ -38,10 +37,9 @@ export class DashboardEquipoComponent implements OnInit {
   jugadoresInscriptosCount = 0;
   cuposRestantes = 0;
 
-  // 🚀 REFRACTOR OPERATIVO: Control elástico de cupos unitarios e individuales
   esDisciplinaIlimitada = false;
-  esAtletismo = false; // Mantenemos la bandera por si manejás idPrueba2 condicional en el HTML
-  esAdaptado = false;
+  esAtletismo = false;
+  esAdaptado = false; // 🚀 Control del CUD
 
   pruebaSeleccionadaData: any = null;
   anioMinPrueba = 0;
@@ -50,7 +48,7 @@ export class DashboardEquipoComponent implements OnInit {
   fileDniFrente: File | null = null;
   fileDniDorso: File | null = null;
   fileFichaMedica: File | null = null;
-  fileCud: File | null = null;
+  fileCud: File | null = null; // 🚀 Archivo CUD
 
   constructor(
     private fb: FormBuilder,
@@ -113,9 +111,8 @@ export class DashboardEquipoComponent implements OnInit {
               const tipoDisciplina = this.equipoData?.disciplina?.tipo?.toUpperCase() || '';
 
               this.esAtletismo = deporte.includes('ATLETISMO');
-              this.esAdaptado = tipoDisciplina === 'ADAPTADO';
+              this.esAdaptado = tipoDisciplina === 'ADAPTADO'; // 🚀 Captura de tipo Adaptado
 
-              // 🚀 DETECTOR INTELIGENTE: Si NO está en esta lista negra de conjunto, es ILIMITADO
               const deportesEstrictamenteColectivos = [
                 'BASQUET 3X3',
                 'FUTSAL',
@@ -193,14 +190,17 @@ export class DashboardEquipoComponent implements OnInit {
     }
   }
 
+  // src/app/modules/municipio/dashboard-equipo/dashboard-equipo.component.ts
+
   recalcularContadores(): void {
     this.jugadoresInscriptosCount = this.jugadores.length;
 
     if (this.esDisciplinaIlimitada) {
-      // 🚀 Si es combate o individual, liberamos las vacantes en los paneles informativos
+      // 🚀 Si es disciplina individual/combate, liberamos vacantes en UI
       this.maxJugadoresPermitidos = 999;
       this.cuposRestantes = 999;
     } else {
+      // Mantenemos la lógica estricta para las demás disciplinas convencionales/adaptadas
       const pruebaBase = this.pruebasFiltradasPorDisciplina[0];
       this.maxJugadoresPermitidos = pruebaBase ? pruebaBase.maxJugadores : 12;
       const restante = this.maxJugadoresPermitidos - this.jugadoresInscriptosCount;
@@ -215,7 +215,7 @@ export class DashboardEquipoComponent implements OnInit {
       if (tipoDoc === 'frente') this.fileDniFrente = file;
       if (tipoDoc === 'dorso') this.fileDniDorso = file;
       if (tipoDoc === 'ficha') this.fileFichaMedica = file;
-      if (tipoDoc === 'cud') this.fileCud = file;
+      if (tipoDoc === 'cud') this.fileCud = file; // 🚀 Asignar CUD
       this.cdr.detectChanges();
     }
   }
@@ -239,6 +239,7 @@ export class DashboardEquipoComponent implements OnInit {
 
     this.delegacionService.registrarEquipo(payload).subscribe({
       next: (res: any) => {
+        // Ajuste genérico para tipado libre de respuesta
         toast.success('¡Entorno Configurado!', { description: res.mensaje });
         this.sincronizarEstadoPanel();
         this.procesandoBoton = false;
@@ -285,6 +286,7 @@ export class DashboardEquipoComponent implements OnInit {
         });
         return;
       }
+      // 🚀 Validación preventiva de CUD
       if (this.esAdaptado && !this.fileCud) {
         toast.error('CUD Obligatorio', {
           description: 'Las disciplinas adaptadas exigen el Certificado de Discapacidad.',
@@ -334,7 +336,7 @@ export class DashboardEquipoComponent implements OnInit {
       if (this.fileDniFrente) formData.append('dniFrente', this.fileDniFrente);
       if (this.fileDniDorso) formData.append('dniDorso', this.fileDniDorso);
       if (this.fileFichaMedica) formData.append('fichaMedica', this.fileFichaMedica);
-      if (this.esAdaptado && this.fileCud) formData.append('cud', this.fileCud);
+      if (this.esAdaptado && this.fileCud) formData.append('cud', this.fileCud); // 🚀 Inyección CUD
 
       this.delegacionService.registrarJugador(formData).subscribe({
         next: (res) => {
@@ -352,7 +354,6 @@ export class DashboardEquipoComponent implements OnInit {
   }
 
   abrirCargaJugador(): void {
-    // 🚀 Cambiado: Ahora evalúa de forma elástica si NO es ilimitado para trabar las vacantes
     if (!this.esDisciplinaIlimitada && this.cuposRestantes <= 0) {
       toast.error('Lista de Buena Fe Completa', {
         description:
@@ -435,7 +436,7 @@ export class DashboardEquipoComponent implements OnInit {
     this.fileDniFrente = null;
     this.fileDniDorso = null;
     this.fileFichaMedica = null;
-    this.fileCud = null;
+    this.fileCud = null; // 🚀 Limpieza CUD
     this.pruebasFiltradas = [];
     this.pruebaSeleccionadaData = null;
     this.mostrarFormularioJugador = false;
