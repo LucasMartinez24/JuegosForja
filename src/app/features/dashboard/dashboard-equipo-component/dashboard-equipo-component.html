@@ -97,9 +97,9 @@
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
           <div>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cupos Permitidos</p>
-            <h3 class="text-2xl font-black text-white mt-1">
-              {{ esAtletismo ? 'ILIMITADOS' : maxJugadoresPermitidos }}
-              <span class="text-xs font-normal text-gray-500" *ngIf="!esAtletismo">Máximos</span>
+            <h3 class="text-xl font-black text-white mt-1">
+              {{ esDisciplinaIlimitada ? 'ILIMITADOS' : maxJugadoresPermitidos }}
+              <span class="text-xs font-normal text-gray-500" *ngIf="!esDisciplinaIlimitada">Máximos</span>
             </h3>
           </div>
           <span class="material-symbols-outlined text-gray-600 text-3xl">assignment</span>
@@ -108,7 +108,7 @@
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
           <div>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cupos Utilizados</p>
-            <h3 class="text-2xl font-black text-forja-naranja mt-1">{{ jugadoresInscriptosCount }} <span
+            <h3 class="text-xl font-black text-forja-naranja mt-1">{{ jugadoresInscriptosCount }} <span
                 class="text-xs font-normal text-gray-500">Inscriptos</span></h3>
           </div>
           <span class="material-symbols-outlined text-forja-naranja/40 text-3xl">group_add</span>
@@ -117,9 +117,9 @@
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
           <div>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vacantes Libres</p>
-            <h3 class="text-2xl font-black text-emerald-400 mt-1">
-              {{ esAtletismo ? 'LIBRE' : cuposRestantes }}
-              <span class="text-xs font-normal text-gray-500" *ngIf="!esAtletismo">Disponibles</span>
+            <h3 class="text-xl font-black text-emerald-400 mt-1">
+              {{ esDisciplinaIlimitada ? 'ACCESO LIBRE' : cuposRestantes }}
+              <span class="text-xs font-normal text-gray-500" *ngIf="!esDisciplinaIlimitada">Disponibles</span>
             </h3>
           </div>
           <span class="material-symbols-outlined text-emerald-500/40 text-3xl">add_moderator</span>
@@ -220,7 +220,8 @@
                       <option value="" disabled selected>{{ jugadorForm.get('genero')?.value ? 'Seleccionar Instancia
                         Oficial' : '⚠️ Primero elija una Rama/Género arriba' }}</option>
                       <option *ngFor="let p of pruebasFiltradas" [value]="p.id">
-                        {{ p.nombrePrueba }} <span *ngIf="!esAtletismo">(Cupo Máx: {{ p.maxJugadores }})</span>
+                        {{ p.nombrePrueba }} <span *ngIf="!esDisciplinaIlimitada">(Cupo Máx: {{ p.maxJugadores
+                          }})</span>
                       </option>
                     </select>
                     <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400"><span
@@ -254,7 +255,8 @@
                     <label
                       class="w-full px-3 py-2 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-forja-naranja rounded-xl text-[11px] text-gray-400 text-center cursor-pointer transition-all truncate block">
                       <span class="material-symbols-outlined text-xs align-middle mr-1">upload_file</span>
-                      {{ fileDniFrente ? fileDniFrente.name : 'Adjuntar Frente' }}
+                      {{ fileDniFrente ? fileDniFrente.name : (modoEdicion ? '🔄 Reemplazar Frente' : 'Adjuntar Frente')
+                      }}
                       <input type="file" (change)="onFileSelected($event, 'frente')" accept="image/*,application/pdf"
                         class="hidden" />
                     </label>
@@ -264,14 +266,14 @@
                     <label
                       class="w-full px-3 py-2 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-forja-naranja rounded-xl text-[11px] text-gray-400 text-center cursor-pointer transition-all truncate block">
                       <span class="material-symbols-outlined text-xs align-middle mr-1">upload_file</span>
-                      {{ fileDniDorso ? fileDniDorso.name : 'Adjuntar Dorso' }}
+                      {{ fileDniDorso ? fileDniDorso.name : (modoEdicion ? '🔄 Reemplazar Dorso' : 'Adjuntar Dorso') }}
                       <input type="file" (change)="onFileSelected($event, 'dorso')" accept="image/*,application/pdf"
                         class="hidden" />
                     </label>
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-2]="esAdaptado">
+                <div class="grid grid-cols-1 gap-3" [class.grid-cols-2]="esAdaptado">
                   <div class="flex flex-col gap-1.5">
                     <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Ficha Médica Colectiva
                       (PDF)</label>
@@ -279,7 +281,8 @@
                       class="w-full px-4 py-2.5 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-emerald-500 rounded-xl text-[11px] text-gray-300 text-center cursor-pointer transition-all truncate block">
                       <span
                         class="material-symbols-outlined text-sm align-middle mr-1 text-emerald-400">medical_services</span>
-                      {{ fileFichaMedica ? fileFichaMedica.name : 'Seleccionar PDF de Aptitud' }}
+                      {{ fileFichaMedica ? fileFichaMedica.name : (modoEdicion ? '🔄 Reemplazar PDF' : 'Seleccionar PDF
+                      de Aptitud') }}
                       <input type="file" (change)="onFileSelected($event, 'ficha')" accept="application/pdf,image/*"
                         class="hidden" />
                     </label>
@@ -292,7 +295,7 @@
                       class="w-full px-4 py-2.5 bg-forja-dark-input hover:bg-white/[0.04] border border-white/10 hover:border-forja-ocre rounded-xl text-[11px] text-gray-300 text-center cursor-pointer transition-all truncate block">
                       <span
                         class="material-symbols-outlined text-sm align-middle mr-1 text-forja-ocre">accessibility_new</span>
-                      {{ fileCud ? fileCud.name : 'Adjuntar CUD (Obligatorio)' }}
+                      {{ fileCud ? fileCud.name : (modoEdicion ? '🔄 Reemplazar CUD' : 'Adjuntar CUD (Obligatorio)') }}
                       <input type="file" (change)="onFileSelected($event, 'cud')" accept="application/pdf,image/*"
                         class="hidden" />
                     </label>
@@ -305,15 +308,17 @@
                   class="px-4 py-2.5 rounded-xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white cursor-pointer transition-colors">
                   Cancelar
                 </button>
+
                 <button
-                  [disabled]="jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion && !esAtletismo) || procesandoBoton"
+                  [disabled]="jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion && !esDisciplinaIlimitada) || procesandoBoton"
                   type="submit"
-                  [class]="(jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion && !esAtletismo)) ? 'bg-gray-700 text-gray-500 border border-white/5 cursor-not-allowed' : 'bg-gradient-to-r from-forja-naranja to-orange-600 text-white cursor-pointer shadow-md'"
+                  [class]="(jugadorForm.invalid || (cuposRestantes <= 0 && !modoEdicion && !esDisciplinaIlimitada)) ? 'bg-gray-700 text-gray-500 border border-white/5 cursor-not-allowed' : 'bg-gradient-to-r from-forja-naranja to-orange-600 text-white cursor-pointer shadow-md'"
                   class="px-5 py-2.5 font-bold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center gap-2">
                   <span class="material-symbols-outlined text-sm font-bold" *ngIf="!procesandoBoton">
-                    {{ (cuposRestantes <= 0 && !modoEdicion && !esAtletismo) ? 'block' : 'save' }} </span>
-                      {{ procesandoBoton ? 'GUARDANDO...' : ((cuposRestantes <= 0 && !modoEdicion && !esAtletismo)
-                        ? 'SIN VACANTES' : 'REGISTRAR ATLETA' ) }} </button>
+                    {{ (cuposRestantes <= 0 && !modoEdicion && !esDisciplinaIlimitada) ? 'block' : 'save' }} </span>
+                      {{ procesandoBoton ? 'GUARDANDO...' : ((cuposRestantes <= 0 && !modoEdicion &&
+                        !esDisciplinaIlimitada) ? 'SIN VACANTES' : (modoEdicion ? 'ACTUALIZAR FICHA'
+                        : 'REGISTRAR ATLETA' ) ) }} </button>
               </div>
             </form>
           </div>
