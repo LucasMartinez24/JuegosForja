@@ -279,6 +279,7 @@ export class DashboardEquipoComponent implements OnInit {
       }
     }
 
+    // Validación estricta de documentos solo si NO estamos editando
     if (!this.modoEdicion) {
       if (!this.fileDniFrente || !this.fileDniDorso || !this.fileFichaMedica) {
         toast.error('Documentación Incompleta', {
@@ -286,7 +287,6 @@ export class DashboardEquipoComponent implements OnInit {
         });
         return;
       }
-      // 🚀 Validación preventiva de CUD
       if (this.esAdaptado && !this.fileCud) {
         toast.error('CUD Obligatorio', {
           description: 'Las disciplinas adaptadas exigen el Certificado de Discapacidad.',
@@ -297,46 +297,48 @@ export class DashboardEquipoComponent implements OnInit {
 
     this.procesandoBoton = true;
 
-    if (this.modoEdicion && this.idJugadorEdicion) {
-      const payloadEdicion = {
-        ...this.jugadorForm.value,
-        peso: this.jugadorForm.get('peso')?.value || null,
-        altura: this.jugadorForm.get('altura')?.value || null,
-      };
+    // 🚀 UNIFICACIÓN MULTIPART/FORM-DATA PARA EDICIÓN Y ALTA
+    const formData = new FormData();
+    formData.append('dni', this.jugadorForm.get('dni')?.value.trim());
+    formData.append('nombre', this.jugadorForm.get('nombre')?.value.trim());
+    formData.append('apellido', this.jugadorForm.get('apellido')?.value.trim());
+    formData.append('fechaNacimiento', this.jugadorForm.get('fechaNacimiento')?.value);
+    formData.append('genero', this.jugadorForm.get('genero')?.value);
+    formData.append('peso', this.jugadorForm.get('peso')?.value || '');
+    formData.append('altura', this.jugadorForm.get('altura')?.value || '');
+    formData.append('idPrueba1', this.jugadorForm.get('idPrueba1')?.value);
+    formData.append('idPrueba2', this.jugadorForm.get('idPrueba2')?.value || '');
 
-      this.delegacionService.editarJugador(this.idJugadorEdicion, payloadEdicion).subscribe({
+    // Inyectamos los archivos binarios al FormData si existen
+    if (this.fileDniFrente) formData.append('dniFrente', this.fileDniFrente);
+    if (this.fileDniDorso) formData.append('dniDorso', this.fileDniDorso);
+    if (this.fileFichaMedica) formData.append('fichaMedica', this.fileFichaMedica);
+    if (this.esAdaptado && this.fileCud) formData.append('cud', this.fileCud);
+
+    if (this.modoEdicion && this.idJugadorEdicion) {
+      // 🚀 EJECUCIÓN FLUIDA DE EDICIÓN CON ARCHIVOS COMPATIBLES
+      this.delegacionService.editarJugador(this.idJugadorEdicion, formData).subscribe({
         next: (res) => {
           toast.success('Ficha Actualizada', { description: res.mensaje });
           const idx = this.jugadores.findIndex((j) => j.id === this.idJugadorEdicion);
-          if (idx !== -1) this.jugadores[idx] = res.jugador;
+          if (idx !== -1) {
+            this.jugadores[idx] = res.jugador; // Actualiza reactivamente en la grilla visual
+          }
           this.cerrarModalJugador();
         },
         error: (err) => {
           this.procesandoBoton = false;
-          toast.error('Error al editar', { description: err.error?.error });
+          toast.error('Error al editar', {
+            description: err.error?.error || 'Verifique la conexión.',
+          });
         },
       });
     } else {
+      // PROCESAMIENTO DE ALTA TRADICIONAL
       const usuarioString = localStorage.getItem('forja_user');
       if (!usuarioString) return;
       const usuarioLogueado = JSON.parse(usuarioString);
-
-      const formData = new FormData();
-      formData.append('dni', this.jugadorForm.get('dni')?.value.trim());
-      formData.append('nombre', this.jugadorForm.get('nombre')?.value.trim());
-      formData.append('apellido', this.jugadorForm.get('apellido')?.value.trim());
-      formData.append('fechaNacimiento', this.jugadorForm.get('fechaNacimiento')?.value);
-      formData.append('genero', this.jugadorForm.get('genero')?.value);
-      formData.append('peso', this.jugadorForm.get('peso')?.value || '');
-      formData.append('altura', this.jugadorForm.get('altura')?.value || '');
-      formData.append('idPrueba1', this.jugadorForm.get('idPrueba1')?.value);
-      formData.append('idPrueba2', this.jugadorForm.get('idPrueba2')?.value || '');
       formData.append('usuarioId', usuarioLogueado.id);
-
-      if (this.fileDniFrente) formData.append('dniFrente', this.fileDniFrente);
-      if (this.fileDniDorso) formData.append('dniDorso', this.fileDniDorso);
-      if (this.fileFichaMedica) formData.append('fichaMedica', this.fileFichaMedica);
-      if (this.esAdaptado && this.fileCud) formData.append('cud', this.fileCud); // 🚀 Inyección CUD
 
       this.delegacionService.registrarJugador(formData).subscribe({
         next: (res) => {
