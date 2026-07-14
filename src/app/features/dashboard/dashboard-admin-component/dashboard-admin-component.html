@@ -380,7 +380,8 @@
               class="material-symbols-outlined text-xs text-gray-500 group-hover:text-white transition-colors">open_in_new</span>
           </a>
 
-          <div *ngIf="!equipoSeleccionable?.usuarioResponsable?.urlDniFrente"
+          <!-- 🚀 CORREGIDO: Sincronización a la propiedad unificada equipoSeleccionado -->
+          <div *ngIf="!equipoSeleccionado.usuarioResponsable.urlDniFrente"
             class="p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl text-center">
             <p class="text-[11px] text-amber-400 leading-normal">⚠️ Esta cuenta de equipo fue generada de manera previa
               al control de archivos o de forma manual externa. No posee imágenes adjuntas.</p>
