@@ -1,6 +1,7 @@
 <div
   class="min-h-screen bg-forja-dark-bg font-epilogue text-gray-200 p-4 md:p-8 relative overflow-hidden flex flex-col justify-between">
 
+  <!-- Fondos Difuminados -->
   <div
     class="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-naranja/5 blur-[140px] pointer-events-none">
   </div>
@@ -10,6 +11,7 @@
 
   <div class="w-full max-w-[1250px] mx-auto flex-1">
 
+    <!-- ENCABEZADO DE LA SECRETARÍA -->
     <header
       class="bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-row justify-between items-center gap-4 shadow-xl mb-6">
       <div class="flex items-center gap-4">
@@ -27,6 +29,7 @@
       </button>
     </header>
 
+    <!-- SELECTOR DE SUB-PESTAÑAS -->
     <div class="flex border-b border-white/5 mb-6 gap-2">
       <button (click)="cambiarSubPestana('auditoria')"
         [class]="subPestanaActiva === 'auditoria' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
@@ -40,6 +43,7 @@
       </button>
     </div>
 
+    <!-- SECCIÓN: ALTA DE CUENTAS MUNICIPALES -->
     <section *ngIf="subPestanaActiva === 'cuentas'"
       class="max-w-[600px] mx-auto bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl space-y-4 animate-fade-in">
       <div>
@@ -96,18 +100,22 @@
       </form>
     </section>
 
+    <!-- SECCIÓN: ARBOL DE AUDITORÍA Y LISTAS DE BUENA FE -->
     <section *ngIf="subPestanaActiva === 'auditoria'" class="space-y-4 animate-fade-in">
 
+      <!-- Loader de Red -->
       <div class="flex flex-col items-center justify-center py-24 space-y-4" *ngIf="cargando">
         <div class="h-10 w-10 border-4 border-forja-naranja border-t-transparent rounded-full animate-spin"></div>
         <p class="text-xs uppercase tracking-widest font-bold text-gray-500">Mapeando y ordenando disciplinas de la
           provincia...</p>
       </div>
 
+      <!-- Contenedor del Árbol Provincial -->
       <div class="space-y-4" *ngIf="!cargando">
         <div class="bg-forja-dark-card/20 border border-white/5 rounded-2xl overflow-hidden shadow-md"
           *ngFor="let disc of disciplinas">
 
+          <!-- NIVEL 1: Disciplina Macro -->
           <div (click)="toggleDisciplina(disc.nombreDisciplina)"
             class="px-6 py-4.5 bg-white/[0.02] hover:bg-white/[0.04] flex justify-between items-center cursor-pointer select-none border-b border-white/5 transition-colors">
             <div class="flex items-center gap-3">
@@ -127,6 +135,7 @@
             </div>
           </div>
 
+          <!-- NIVEL 2: Municipios Asociados -->
           <div class="p-4 space-y-3 bg-black/10 animate-fade-in" *ngIf="disciplinasExpandidas[disc.nombreDisciplina]">
             <div class="border border-white/5 rounded-xl bg-forja-dark-card/40 overflow-hidden shadow-inner"
               *ngFor="let mun of disc.municipios">
@@ -143,10 +152,12 @@
                   Delegación/es</span>
               </div>
 
+              <!-- NIVEL 3: Clubes/Equipos del Municipio -->
               <div class="border-t border-white/5 bg-black/20 divide-y divide-white/5 animate-fade-in"
                 *ngIf="municipiosExpandidos[disc.nombreDisciplina + mun.nombreMunicipio]">
                 <div class="p-4 space-y-3" *ngFor="let eq of mun.equipos">
 
+                  <!-- Fila Control Superior de la Entidad -->
                   <div
                     class="flex justify-between items-center bg-white/[0.01] px-4 py-3 rounded-xl border border-white/5 shadow-inner">
                     <span
@@ -172,6 +183,7 @@
                     </div>
                   </div>
 
+                  <!-- TABLA DE JUGADORES / ATLETAS -->
                   <div class="overflow-x-auto rounded-xl border border-white/5 shadow-md">
                     <table class="w-full text-left text-xs text-gray-300 border-collapse">
                       <thead>
@@ -186,16 +198,16 @@
                       </thead>
                       <tbody class="divide-y divide-white/5 bg-forja-dark-card/10">
                         <tr class="hover:bg-white/[0.01] transition-colors" *ngFor="let atleta of eq.atletas">
-                          <td class="p-4 font-bold text-white uppercase tracking-wide">{{ atleta.apellido }}, {{
-                            atleta.nombre }}</td>
+                          <td class="p-4 font-bold text-white uppercase tracking-wide">
+                            {{ atleta.apellido }}, {{ atleta.nombre }}
+                          </td>
                           <td class="p-4 font-mono text-gray-400 text-[11px]">DNI {{ atleta.dni }}</td>
+
+                          <!-- 🚀 CELDA CORREGIDA: Renderizado dinámico de prueba principal y pruebas múltiples relacionales -->
                           <td class="p-4 space-y-1 max-w-[220px]">
-                            <!-- Prueba Principal -->
                             <div class="font-bold text-forja-ocre tracking-wide uppercase text-[11px] truncate">
                               {{ atleta.prueba?.nombrePrueba || 'Prueba General' }}
                             </div>
-
-                            <!-- 🚀 Listado Dinámico de Pruebas Múltiples Adicionales (Atletismo / Natación) -->
                             <div *ngIf="atleta.pruebasAdicionales && atleta.pruebasAdicionales.length > 0"
                               class="space-y-0.5">
                               <div *ngFor="let adic of atleta.pruebasAdicionales; let idx = index"
@@ -205,6 +217,7 @@
                               </div>
                             </div>
                           </td>
+
                           <td class="p-4 text-center">
                             <span
                               [class]="atleta.estado === 'APROBADO' ? 'bg-green-500/10 text-green-400 border-green-500/20' : atleta.estado === 'RECHAZADO' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'"
@@ -234,6 +247,7 @@
     </section>
   </div>
 
+  <!-- MODAL: EVALUACIÓN DE DOCUMENTACIÓN DEL ATLETA -->
   <div
     class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in"
     *ngIf="mostrarModalAuditoria">
@@ -281,6 +295,15 @@
             <span
               class="material-symbols-outlined text-xs text-emerald-500 group-hover:text-emerald-300 transition-colors">open_in_new</span>
           </a>
+          <!-- CUD (Si corresponde) -->
+          <a *ngIf="atletaSeleccionado?.urlCud" [href]="atletaSeleccionado.urlCud" target="_blank"
+            class="w-full px-4 py-3 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 hover:border-forja-ocre rounded-xl text-xs text-forja-ocre hover:text-amber-300 font-bold transition-all flex items-center justify-between group shadow-inner">
+            <span class="flex items-center gap-2"><span
+                class="material-symbols-outlined text-forja-ocre text-md">accessibility_new</span><span>Certificado de
+                Discapacidad (CUD)</span></span>
+            <span
+              class="material-symbols-outlined text-xs text-amber-500 group-hover:text-amber-300 transition-colors">open_in_new</span>
+          </a>
         </div>
       </div>
 
@@ -301,6 +324,7 @@
     </div>
   </div>
 
+  <!-- MODAL: VERIFICACIÓN DE FIRMA DEL DELEGADO -->
   <div
     class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in"
     *ngIf="mostrarModalDelegado">
@@ -334,7 +358,6 @@
         </div>
 
         <div class="grid grid-cols-1 gap-2.5" *ngIf="equipoSeleccionado?.usuarioResponsable">
-
           <a *ngIf="equipoSeleccionado.usuarioResponsable.urlDniFrente"
             [href]="equipoSeleccionado.usuarioResponsable.urlDniFrente" target="_blank"
             class="w-full px-4 py-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-forja-naranja rounded-xl text-xs text-gray-200 hover:text-white font-bold transition-all flex items-center justify-between group shadow-inner">
@@ -357,12 +380,11 @@
               class="material-symbols-outlined text-xs text-gray-500 group-hover:text-white transition-colors">open_in_new</span>
           </a>
 
-          <div *ngIf="!equipoSeleccionado.usuarioResponsable.urlDniFrente"
+          <div *ngIf="!equipoSeleccionable?.usuarioResponsable?.urlDniFrente"
             class="p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl text-center">
             <p class="text-[11px] text-amber-400 leading-normal">⚠️ Esta cuenta de equipo fue generada de manera previa
               al control de archivos o de forma manual externa. No posee imágenes adjuntas.</p>
           </div>
-
         </div>
       </div>
 
@@ -383,12 +405,15 @@
     </div>
   </div>
 
+  <!-- FOOTER PRINCIPAL -->
   <footer
     class="mt-4 flex flex-col sm:flex-row justify-between items-center text-[10px] font-bold uppercase tracking-widest text-gray-600 select-none border-t border-white/5 pt-4">
     <span>© 2026 JUEGOS FORJA - REC Technologies</span>
     <span class="text-forja-ocre">SECRETARÍA DE DEPORTES DE JUJUY</span>
   </footer>
 </div>
+
+<!-- MODAL ESTÉTICO: DIALOGO CONFIRMACIÓN ELIMINACIÓN DELEGACIÓN -->
 <div class="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in"
   *ngIf="mostrarModalConfirmarEliminar">
   <div
