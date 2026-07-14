@@ -63,6 +63,7 @@ export class DashboardEquipoComponent implements OnInit {
       idDisciplina: ['', Validators.required],
     });
 
+    // 🚀 Definición completa del formulario incluyendo los 5 selectores opcionales para Natación
     this.jugadorForm = this.fb.group({
       dni: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}$')]],
       nombre: ['', Validators.required],
@@ -72,7 +73,11 @@ export class DashboardEquipoComponent implements OnInit {
       peso: [''],
       altura: [''],
       idPrueba1: ['', Validators.required],
-      idPrueba2: [''], // Lo mantenemos en el form reactivo para Atletismo
+      idPrueba2: [''],
+      idPrueba3: [''],
+      idPrueba4: [''],
+      idPrueba5: [''],
+      idPrueba6: [''],
     });
 
     this.jugadorForm.get('genero')?.valueChanges.subscribe((generoSeleccionado) => {
@@ -211,7 +216,7 @@ export class DashboardEquipoComponent implements OnInit {
       if (tipoDoc === 'frente') this.fileDniFrente = file;
       if (tipoDoc === 'dorso') this.fileDniDorso = file;
       if (tipoDoc === 'ficha') this.fileFichaMedica = file;
-      if (tipoDoc === 'cud') this.fileCud = file;
+      if (tipoDoc === 'cud') this.fileCud = file; //
       this.cdr.detectChanges();
     }
   }
@@ -301,13 +306,19 @@ export class DashboardEquipoComponent implements OnInit {
     formData.append('altura', this.jugadorForm.get('altura')?.value || '');
     formData.append('idPrueba1', this.jugadorForm.get('idPrueba1')?.value);
 
-    // 🚀 Envíamos la prueba adicional (idPrueba2) si es Atletismo y está seleccionada
-    const idPrueba2 = this.jugadorForm.get('idPrueba2')?.value;
-    if (this.esAtletismo && idPrueba2) {
-      formData.append('idPrueba2', idPrueba2);
-    } else {
-      formData.append('idPrueba2', '');
+    // 🚀 Recolectamos dinámicamente las N pruebas adicionales opcionales seleccionadas
+    const pruebasExtras: string[] = [];
+    const maxSelectsAdicionales = this.esAtletismo ? 2 : 6; // Atletismo hasta idPrueba2, Natación hasta idPrueba6
+
+    for (let i = 2; i <= maxSelectsAdicionales; i++) {
+      const val = this.jugadorForm.get(`idPrueba${i}`)?.value;
+      if (val) {
+        pruebasExtras.push(val);
+      }
     }
+
+    // Enviamos el array de IDs serializado para que el backend lo asimile en su tabla intermedia
+    formData.append('pruebasAdicionales', JSON.stringify(pruebasExtras));
 
     if (this.fileDniFrente) formData.append('dniFrente', this.fileDniFrente);
     if (this.fileDniDorso) formData.append('dniDorso', this.fileDniDorso);
@@ -365,7 +376,17 @@ export class DashboardEquipoComponent implements OnInit {
     this.modoEdicion = false;
     this.idJugadorEdicion = null;
     this.pruebaSeleccionadaData = null;
-    this.jugadorForm.reset({ genero: '', idPrueba1: '', idPrueba2: '' });
+
+    // Reset integral de los 6 campos de pruebas
+    this.jugadorForm.reset({
+      genero: '',
+      idPrueba1: '',
+      idPrueba2: '',
+      idPrueba3: '',
+      idPrueba4: '',
+      idPrueba5: '',
+      idPrueba6: '',
+    });
     this.pruebasFiltradas = [];
     this.mostrarFormularioJugador = true;
     this.cdr.detectChanges();
@@ -379,11 +400,23 @@ export class DashboardEquipoComponent implements OnInit {
     this.filtrarPruebasPorGenero(jugador.genero);
     this.evaluarRequerimientosPrueba(jugador.idPrueba);
 
-    // 🚀 Extraemos de forma segura el ID de la segunda prueba desde el array relacional "pruebasAdicionales"
-    let idPrueba2Extraido = '';
+    // Diccionario temporal para limpiar e inyectar valores secuencialmente
+    const pruebasAdicMap: { [key: string]: any } = {
+      idPrueba2: '',
+      idPrueba3: '',
+      idPrueba4: '',
+      idPrueba5: '',
+      idPrueba6: '',
+    };
+
+    // 🚀 Mapeo de la relación intermedia (pruebasAdicionales) a los selects dinámicos idPruebaX
     if (jugador.pruebasAdicionales && jugador.pruebasAdicionales.length > 0) {
-      idPrueba2Extraido =
-        jugador.pruebasAdicionales[0].idPrueba || jugador.pruebasAdicionales[0].id_prueba || '';
+      jugador.pruebasAdicionales.forEach((adic: any, index: number) => {
+        if (index < 5) {
+          const key = `idPrueba${index + 2}`;
+          pruebasAdicMap[key] = adic.idPrueba || adic.id_prueba || '';
+        }
+      });
     }
 
     this.jugadorForm.patchValue({
@@ -395,7 +428,11 @@ export class DashboardEquipoComponent implements OnInit {
       peso: jugador.pesoKg,
       altura: jugador.alturaCm,
       idPrueba1: jugador.idPrueba,
-      idPrueba2: idPrueba2Extraido,
+      idPrueba2: pruebasAdicMap['idPrueba2'],
+      idPrueba3: pruebasAdicMap['idPrueba3'],
+      idPrueba4: pruebasAdicMap['idPrueba4'],
+      idPrueba5: pruebasAdicMap['idPrueba5'],
+      idPrueba6: pruebasAdicMap['idPrueba6'],
     });
 
     this.mostrarFormularioJugador = true;
@@ -442,7 +479,7 @@ export class DashboardEquipoComponent implements OnInit {
     this.fileDniFrente = null;
     this.fileDniDorso = null;
     this.fileFichaMedica = null;
-    this.fileCud = null;
+    this.fileCud = null; // 🚀 Limpieza CUD
     this.pruebasFiltradas = [];
     this.pruebaSeleccionadaData = null;
     this.mostrarFormularioJugador = false;
