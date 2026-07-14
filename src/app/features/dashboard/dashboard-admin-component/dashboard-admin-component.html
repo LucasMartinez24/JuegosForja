@@ -189,9 +189,22 @@
                           <td class="p-4 font-bold text-white uppercase tracking-wide">{{ atleta.apellido }}, {{
                             atleta.nombre }}</td>
                           <td class="p-4 font-mono text-gray-400 text-[11px]">DNI {{ atleta.dni }}</td>
-                          <td
-                            class="p-4 font-bold text-forja-ocre tracking-wide uppercase text-[10px] max-w-[200px] truncate">
-                            {{ atleta.prueba?.nombrePrueba }}</td>
+                          <td class="p-4 space-y-1 max-w-[220px]">
+                            <!-- Prueba Principal -->
+                            <div class="font-bold text-forja-ocre tracking-wide uppercase text-[11px] truncate">
+                              {{ atleta.prueba?.nombrePrueba || 'Prueba General' }}
+                            </div>
+
+                            <!-- 🚀 Listado Dinámico de Pruebas Múltiples Adicionales (Atletismo / Natación) -->
+                            <div *ngIf="atleta.pruebasAdicionales && atleta.pruebasAdicionales.length > 0"
+                              class="space-y-0.5">
+                              <div *ngFor="let adic of atleta.pruebasAdicionales; let idx = index"
+                                class="text-[10px] text-cyan-400 font-medium italic flex items-center gap-1 truncate select-none">
+                                <span class="material-symbols-outlined text-[12px]">add_circle</span>
+                                P. Extra #{{ idx + 1 }}: {{ adic.prueba?.nombrePrueba }}
+                              </div>
+                            </div>
+                          </td>
                           <td class="p-4 text-center">
                             <span
                               [class]="atleta.estado === 'APROBADO' ? 'bg-green-500/10 text-green-400 border-green-500/20' : atleta.estado === 'RECHAZADO' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'"

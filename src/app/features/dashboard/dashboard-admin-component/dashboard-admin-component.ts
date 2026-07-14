@@ -35,7 +35,6 @@ export class DashboardAdminComponent implements OnInit {
   mostrarModalDelegado = false;
   equipoSeleccionado: any = null;
 
-  // 🚀 NUEVO: Propiedades para Modal de Confirmación Estético en Admin
   mostrarModalConfirmarEliminar = false;
   equipoParaEliminar: { idEquipo: string; nombreEquipo: string } | null = null;
   procesandoEliminacion = false;
@@ -113,7 +112,6 @@ export class DashboardAdminComponent implements OnInit {
     });
   }
 
-  // 🚀 INTERCEPTOR INTERFAZ: Levanta el modal en vez de disparar confirm() de Windows
   eliminarDelegacionFalsa(idEquipo: string, nombreEquipo: string): void {
     this.equipoParaEliminar = { idEquipo, nombreEquipo };
     this.mostrarModalConfirmarEliminar = true;
@@ -123,23 +121,20 @@ export class DashboardAdminComponent implements OnInit {
   eliminarDesdeModalDelegado(): void {
     if (!this.equipoSeleccionado) return;
 
-    // Guardamos los datos antes de apagar el modal
     this.equipoParaEliminar = {
       idEquipo: this.equipoSeleccionado.idEquipo,
       nombreEquipo: this.equipoSeleccionado.nombreEquipo,
     };
 
-    this.mostrarModalDelegado = false; // 1. Cerramos el visor de DNI
-    this.cdr.detectChanges(); // Forzamos limpieza inmediata
+    this.mostrarModalDelegado = false;
+    this.cdr.detectChanges();
 
-    // 🚀 SOLUCIÓN: Desplazamos la apertura al siguiente tick del ciclo de vida
     setTimeout(() => {
       this.mostrarModalConfirmarEliminar = true;
       this.cdr.detectChanges();
     }, 0);
   }
 
-  // 🚀 ADJUDICACIÓN DE BAJA PROVINCIAL FINAL
   confirmarEliminacionEfectiva(): void {
     if (!this.equipoParaEliminar || this.procesandoEliminacion) return;
     this.procesandoEliminacion = true;
@@ -147,7 +142,6 @@ export class DashboardAdminComponent implements OnInit {
     const idTarget = this.equipoParaEliminar.idEquipo;
     const resguardoArbol = JSON.parse(JSON.stringify(this.disciplinas));
 
-    // Remoción optimista visual
     this.disciplinas.forEach((disc) => {
       disc.municipios.forEach((mun: any) => {
         mun.equipos = mun.equipos.filter((eq: any) => eq.idEquipo !== idTarget);
@@ -161,7 +155,7 @@ export class DashboardAdminComponent implements OnInit {
         this.cerrarModalConfirmar();
       },
       error: (err) => {
-        this.disciplinas = resguardoArbol; // Rollback
+        this.disciplinas = resguardoArbol;
         this.procesandoEliminacion = false;
         this.cdr.detectChanges();
         toast.error('Error', { description: err.error?.error || 'No se pudo remover el club.' });
