@@ -72,7 +72,7 @@ export class DashboardEquipoComponent implements OnInit {
       peso: [''],
       altura: [''],
       idPrueba1: ['', Validators.required],
-      idPrueba2: [''],
+      idPrueba2: [''], // Lo mantenemos en el form reactivo para Atletismo
     });
 
     this.jugadorForm.get('genero')?.valueChanges.subscribe((generoSeleccionado) => {
@@ -190,17 +190,13 @@ export class DashboardEquipoComponent implements OnInit {
     }
   }
 
-  // src/app/modules/municipio/dashboard-equipo/dashboard-equipo.component.ts
-
   recalcularContadores(): void {
     this.jugadoresInscriptosCount = this.jugadores.length;
 
     if (this.esDisciplinaIlimitada) {
-      // 🚀 Si es disciplina individual/combate, liberamos vacantes en UI
       this.maxJugadoresPermitidos = 999;
       this.cuposRestantes = 999;
     } else {
-      // Mantenemos la lógica estricta para las demás disciplinas convencionales/adaptadas
       const pruebaBase = this.pruebasFiltradasPorDisciplina[0];
       this.maxJugadoresPermitidos = pruebaBase ? pruebaBase.maxJugadores : 12;
       const restante = this.maxJugadoresPermitidos - this.jugadoresInscriptosCount;
@@ -215,7 +211,7 @@ export class DashboardEquipoComponent implements OnInit {
       if (tipoDoc === 'frente') this.fileDniFrente = file;
       if (tipoDoc === 'dorso') this.fileDniDorso = file;
       if (tipoDoc === 'ficha') this.fileFichaMedica = file;
-      if (tipoDoc === 'cud') this.fileCud = file; // 🚀 Asignar CUD
+      if (tipoDoc === 'cud') this.fileCud = file;
       this.cdr.detectChanges();
     }
   }
@@ -239,7 +235,6 @@ export class DashboardEquipoComponent implements OnInit {
 
     this.delegacionService.registrarEquipo(payload).subscribe({
       next: (res: any) => {
-        // Ajuste genérico para tipado libre de respuesta
         toast.success('¡Entorno Configurado!', { description: res.mensaje });
         this.sincronizarEstadoPanel();
         this.procesandoBoton = false;
@@ -279,7 +274,6 @@ export class DashboardEquipoComponent implements OnInit {
       }
     }
 
-    // Validación estricta de documentos solo si NO estamos editando
     if (!this.modoEdicion) {
       if (!this.fileDniFrente || !this.fileDniDorso || !this.fileFichaMedica) {
         toast.error('Documentación Incompleta', {
@@ -297,7 +291,6 @@ export class DashboardEquipoComponent implements OnInit {
 
     this.procesandoBoton = true;
 
-    // 🚀 UNIFICACIÓN MULTIPART/FORM-DATA PARA EDICIÓN Y ALTA
     const formData = new FormData();
     formData.append('dni', this.jugadorForm.get('dni')?.value.trim());
     formData.append('nombre', this.jugadorForm.get('nombre')?.value.trim());
@@ -307,22 +300,27 @@ export class DashboardEquipoComponent implements OnInit {
     formData.append('peso', this.jugadorForm.get('peso')?.value || '');
     formData.append('altura', this.jugadorForm.get('altura')?.value || '');
     formData.append('idPrueba1', this.jugadorForm.get('idPrueba1')?.value);
-    formData.append('idPrueba2', this.jugadorForm.get('idPrueba2')?.value || '');
 
-    // Inyectamos los archivos binarios al FormData si existen
+    // 🚀 Envíamos la prueba adicional (idPrueba2) si es Atletismo y está seleccionada
+    const idPrueba2 = this.jugadorForm.get('idPrueba2')?.value;
+    if (this.esAtletismo && idPrueba2) {
+      formData.append('idPrueba2', idPrueba2);
+    } else {
+      formData.append('idPrueba2', '');
+    }
+
     if (this.fileDniFrente) formData.append('dniFrente', this.fileDniFrente);
     if (this.fileDniDorso) formData.append('dniDorso', this.fileDniDorso);
     if (this.fileFichaMedica) formData.append('fichaMedica', this.fileFichaMedica);
     if (this.esAdaptado && this.fileCud) formData.append('cud', this.fileCud);
 
     if (this.modoEdicion && this.idJugadorEdicion) {
-      // 🚀 EJECUCIÓN FLUIDA DE EDICIÓN CON ARCHIVOS COMPATIBLES
       this.delegacionService.editarJugador(this.idJugadorEdicion, formData).subscribe({
         next: (res) => {
           toast.success('Ficha Actualizada', { description: res.mensaje });
           const idx = this.jugadores.findIndex((j) => j.id === this.idJugadorEdicion);
           if (idx !== -1) {
-            this.jugadores[idx] = res.jugador; // Actualiza reactivamente en la grilla visual
+            this.jugadores[idx] = res.jugador;
           }
           this.cerrarModalJugador();
         },
@@ -334,7 +332,6 @@ export class DashboardEquipoComponent implements OnInit {
         },
       });
     } else {
-      // PROCESAMIENTO DE ALTA TRADICIONAL
       const usuarioString = localStorage.getItem('forja_user');
       if (!usuarioString) return;
       const usuarioLogueado = JSON.parse(usuarioString);
@@ -382,6 +379,13 @@ export class DashboardEquipoComponent implements OnInit {
     this.filtrarPruebasPorGenero(jugador.genero);
     this.evaluarRequerimientosPrueba(jugador.idPrueba);
 
+    // 🚀 Extraemos de forma segura el ID de la segunda prueba desde el array relacional "pruebasAdicionales"
+    let idPrueba2Extraido = '';
+    if (jugador.pruebasAdicionales && jugador.pruebasAdicionales.length > 0) {
+      idPrueba2Extraido =
+        jugador.pruebasAdicionales[0].idPrueba || jugador.pruebasAdicionales[0].id_prueba || '';
+    }
+
     this.jugadorForm.patchValue({
       dni: jugador.dni,
       nombre: jugador.nombre,
@@ -391,7 +395,7 @@ export class DashboardEquipoComponent implements OnInit {
       peso: jugador.pesoKg,
       altura: jugador.alturaCm,
       idPrueba1: jugador.idPrueba,
-      idPrueba2: jugador.idPrueba2 || '',
+      idPrueba2: idPrueba2Extraido,
     });
 
     this.mostrarFormularioJugador = true;
@@ -438,7 +442,7 @@ export class DashboardEquipoComponent implements OnInit {
     this.fileDniFrente = null;
     this.fileDniDorso = null;
     this.fileFichaMedica = null;
-    this.fileCud = null; // 🚀 Limpieza CUD
+    this.fileCud = null;
     this.pruebasFiltradas = [];
     this.pruebaSeleccionadaData = null;
     this.mostrarFormularioJugador = false;

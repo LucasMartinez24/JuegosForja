@@ -1,6 +1,7 @@
 <div
   class="min-h-screen bg-forja-dark-bg font-epilogue text-gray-200 p-4 md:p-8 relative overflow-hidden flex flex-col justify-between">
 
+  <!-- Fondos Difuminados -->
   <div
     class="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-forja-azul/10 blur-[140px] pointer-events-none">
   </div>
@@ -10,6 +11,7 @@
 
   <div class="w-full max-w-[1300px] mx-auto flex-1 flex flex-col justify-center">
 
+    <!-- PANTALLA 1: CONFIGURACIÓN INICIAL DEL EQUIPO -->
     <main *ngIf="!tieneEquipoConfigurado"
       class="max-w-[550px] w-full mx-auto bg-forja-dark-card/40 backdrop-blur-xl border border-white/5 rounded-2xl p-8 md:p-10 shadow-2xl space-y-6">
       <header class="text-center space-y-2">
@@ -65,7 +67,10 @@
       </form>
     </main>
 
+    <!-- PANTALLA 2: LISTA DE BUENA FE Y GESTIÓN DE ROSTER -->
     <main *ngIf="tieneEquipoConfigurado" class="space-y-6 my-4">
+
+      <!-- Encabezado de la Delegación -->
       <section
         class="bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-lg">
         <div class="flex items-center gap-4">
@@ -92,6 +97,7 @@
         </div>
       </section>
 
+      <!-- Indicadores de Roster -->
       <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div
           class="bg-forja-dark-card/30 backdrop-blur-md border border-white/5 rounded-xl p-5 flex items-center justify-between">
@@ -126,6 +132,7 @@
         </div>
       </section>
 
+      <!-- MODAL FORMULARIO: REGISTRO / EDICIÓN DE ATLETA -->
       <section class="relative">
         <div *ngIf="mostrarFormularioJugador"
           class="fixed inset-0 bg-forja-dark-bg/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -133,8 +140,9 @@
             class="bg-forja-dark-card border border-white/10 rounded-2xl p-6 max-w-[500px] w-full space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
             <header class="flex justify-between items-center border-b border-white/5 pb-3">
               <div>
-                <h3 class="text-md font-black text-white tracking-wide">{{ modoEdicion ? 'Actualizar Ficha de
-                  Competencia' : 'Ficha Individual de Inscripción' }}</h3>
+                <h3 class="text-md font-black text-white tracking-wide">
+                  {{ modoEdicion ? 'Actualizar Ficha de Competencia' : 'Ficha Individual de Inscripción' }}
+                </h3>
                 <p class="text-[11px] text-gray-400">Seleccione la prueba específica e ingrese la documentación.</p>
               </div>
               <button type="button" (click)="mostrarFormularioJugador = false"
@@ -144,6 +152,8 @@
             </header>
 
             <form [formGroup]="jugadorForm" (ngSubmit)="onRegistrarJugador()" class="space-y-4">
+
+              <!-- DNI -->
               <div class="flex flex-col gap-1.5">
                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">DNI (Sin Puntos)</label>
                 <input formControlName="dni" type="text"
@@ -153,6 +163,7 @@
                   class="text-[10px] text-forja-naranja font-bold">DNI inválido (7 u 8 números).</span>
               </div>
 
+              <!-- Nombre y Apellido -->
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nombre/s</label>
@@ -168,6 +179,7 @@
                 </div>
               </div>
 
+              <!-- Fecha Nacimiento y Género -->
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -189,6 +201,7 @@
                 </div>
               </div>
 
+              <!-- Peso y Altura -->
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -210,9 +223,11 @@
                 </div>
               </div>
 
+              <!-- SECCIÓN DE SELECCIÓN DE PRUEBAS -->
               <div class="space-y-3">
+                <!-- 1. Prueba Principal (Obligatoria para todas las disciplinas) -->
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prueba / Especialidad de
+                  <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prueba Principal de
                     Inscripción</label>
                   <div class="relative">
                     <select formControlName="idPrueba1"
@@ -224,27 +239,71 @@
                           }})</span>
                       </option>
                     </select>
-                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400"><span
-                        class="material-symbols-outlined text-base">keyboard_arrow_down</span></div>
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                      <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+                    </div>
                   </div>
                 </div>
 
-                <div *ngIf="esAtletismo && pruebasFiltradas.length > 0" class="flex flex-col gap-1.5 animate-fade-in">
-                  <label class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">Segunda Prueba
-                    Opcional</label>
-                  <div class="relative">
-                    <select formControlName="idPrueba2"
-                      class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none">
-                      <option value="">Ninguna - Participa solo en una prueba</option>
-                      <option *ngFor="let p of pruebasFiltradas" [value]="p.id"
-                        [disabled]="jugadorForm.get('idPrueba1')?.value == p.id">{{ p.nombrePrueba }}</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400"><span
-                        class="material-symbols-outlined text-base">keyboard_arrow_down</span></div>
+                <!-- 2. Selects Dinámicos de Pruebas Adicionales (Atletismo y Natación) -->
+                <ng-container *ngIf="pruebasFiltradas.length > 0">
+
+                  <!-- ATLETISMO: Permite hasta 1 prueba opcional extra (Total 2) -->
+                  <div *ngIf="esAtletismo" class="flex flex-col gap-1.5 animate-fade-in">
+                    <label class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">Segunda Prueba
+                      Opcional</label>
+                    <div class="relative">
+                      <select formControlName="idPrueba2"
+                        class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none">
+                        <option value="">Ninguna - Participa solo en una prueba</option>
+                        <option *ngFor="let p of pruebasFiltradas" [value]="p.id"
+                          [disabled]="jugadorForm.get('idPrueba1')?.value == p.id">
+                          {{ p.nombrePrueba }}
+                        </option>
+                      </select>
+                      <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                        <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+
+                  <!-- NATACIÓN: Permite de 1 hasta 5 pruebas opcionales extras (Total 6) -->
+                  <!-- Utilizamos un bucle dinámico nativo para renderizar los 5 Selects adicionales independientes -->
+                  <div *ngIf="equipoData?.disciplina?.nombre?.toUpperCase()?.includes('NATACION')"
+                    class="space-y-3 animate-fade-in">
+                    <div class="border-t border-white/5 my-2 pt-2">
+                      <span class="text-[9px] font-bold text-sky-400 uppercase tracking-widest">Pruebas Adicionales de
+                        Natación (Opcionales - Máximo 5)</span>
+                    </div>
+
+                    <div *ngFor="let index of [2, 3, 4, 5, 6]" class="flex flex-col gap-1.5">
+                      <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prueba Adicional #{{
+                        index - 1 }}</label>
+                      <div class="relative">
+                        <select [formControlName]="'idPrueba' + index"
+                          class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none">
+                          <option value="">Ninguna prueba adicional seleccionada</option>
+                          <option *ngFor="let p of pruebasFiltradas" [value]="p.id" [disabled]="
+                              jugadorForm.get('idPrueba1')?.value == p.id ||
+                              (index > 2 && jugadorForm.get('idPrueba2')?.value == p.id) ||
+                              (index > 3 && jugadorForm.get('idPrueba3')?.value == p.id) ||
+                              (index > 4 && jugadorForm.get('idPrueba4')?.value == p.id) ||
+                              (index > 5 && jugadorForm.get('idPrueba5')?.value == p.id)
+                            ">
+                            {{ p.nombrePrueba }}
+                          </option>
+                        </select>
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                          <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </ng-container>
               </div>
 
+              <!-- SECCIÓN DE DOCUMENTACIÓN DIGITAL -->
               <div class="border-t border-white/5 pt-3 space-y-3">
                 <p class="text-[10px] font-bold text-forja-naranja uppercase tracking-widest mb-1">Documentación Digital
                 </p>
@@ -303,6 +362,7 @@
                 </div>
               </div>
 
+              <!-- Botoneras del Modal -->
               <div class="flex justify-end gap-3 border-t border-white/5 pt-4">
                 <button type="button" (click)="mostrarFormularioJugador = false"
                   class="px-4 py-2.5 rounded-xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white cursor-pointer transition-colors">
@@ -325,6 +385,7 @@
         </div>
       </section>
 
+      <!-- TABLA PRINCIPAL DE ROSTER (LISTADO DE BUENA FE) -->
       <section
         class="bg-forja-dark-card/50 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl min-h-[450px]">
         <div class="overflow-x-auto rounded-xl border border-white/5">
@@ -346,18 +407,27 @@
                 <td class="p-4 font-mono text-gray-400 tracking-wider">{{ jugador?.dni }}</td>
                 <td class="p-4">
                   <span
-                    class="text-[10px] text-forja-ocre bg-forja-azul/50 border border-white/5 px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider">{{
-                    jugador?.genero }}</span>
+                    class="text-[10px] text-forja-ocre bg-forja-azul/50 border border-white/5 px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                    {{ jugador?.genero }}
+                  </span>
                 </td>
+
+                <!-- Celda de Pruebas Asociadas (Dinámica e Intermedia) -->
                 <td class="p-4 space-y-1">
-                  <div class="text-white font-bold tracking-wide uppercase text-[11px]">{{ jugador?.prueba?.nombrePrueba
-                    || 'Prueba General' }}</div>
-                  <div *ngIf="jugador?.idPrueba2"
-                    class="text-forja-ocre text-[10px] font-medium italic flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[12px]">add_circle</span> 2da Prueba: {{
-                    jugador?.nombrePrueba2 }}
+                  <div class="text-white font-bold tracking-wide uppercase text-[11px]">
+                    {{ jugador?.prueba?.nombrePrueba || 'Prueba General' }}
+                  </div>
+
+                  <!-- Listamos dinámicamente las N pruebas adicionales que tenga en la relación intermedia -->
+                  <div *ngIf="jugador?.pruebasAdicionales && jugador.pruebasAdicionales.length > 0" class="space-y-1">
+                    <div *ngFor="let adic of jugador.pruebasAdicionales; let idx = index"
+                      class="text-forja-ocre text-[10px] font-medium italic flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[11px] text-sky-400">add_circle</span>
+                      Prueba Adic. #{{ idx + 1 }}: {{ adic.prueba?.nombrePrueba || 'Cargada' }}
+                    </div>
                   </div>
                 </td>
+
                 <td class="p-4 text-center">
                   <span
                     [class]="jugador?.estado === 'APROBADO' ? 'bg-green-500/10 text-green-400 border-green-500/20' : jugador?.estado === 'RECHAZADO' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'"
@@ -369,19 +439,22 @@
                   <div class="flex items-center justify-center gap-2">
                     <button (click)="abrirEdicionJugador(jugador)" type="button"
                       class="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg transition-all cursor-pointer"
-                      title="Editar datos del atleta"><span
-                        class="material-symbols-outlined text-base">edit</span></button>
+                      title="Editar datos del atleta">
+                      <span class="material-symbols-outlined text-base">edit</span>
+                    </button>
                     <button (click)="solicitarBajaJugador(jugador)" type="button"
                       class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all cursor-pointer"
-                      title="Dar de baja atleta"><span
-                        class="material-symbols-outlined text-base">delete</span></button>
+                      title="Dar de baja atleta">
+                      <span class="material-symbols-outlined text-base">delete</span>
+                    </button>
                   </div>
                 </td>
               </tr>
               <tr *ngIf="jugadores.length === 0">
-                <td colspan="6" class="p-12 text-center text-gray-500 font-medium tracking-wide">La lista de buena fe
-                  está vacía. Use el botón <strong class="text-forja-naranja">"Inscribir Atleta"</strong> para dar de
-                  alta sus primeros cupos.</td>
+                <td colspan="6" class="p-12 text-center text-gray-500 font-medium tracking-wide">
+                  La lista de buena fe está vacía. Use el botón <strong class="text-forja-naranja">"Inscribir
+                    Atleta"</strong> para dar de alta sus primeros cupos.
+                </td>
               </tr>
             </tbody>
           </table>
@@ -390,6 +463,7 @@
     </main>
   </div>
 
+  <!-- MODAL CONFIRMACIÓN DE BAJA -->
   <div *ngIf="mostrarModalConfirmarBorrar"
     class="fixed inset-0 bg-forja-dark-bg/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 animate-fade-in">
     <div
@@ -414,6 +488,7 @@
     </div>
   </div>
 
+  <!-- FOOTER -->
   <footer
     class="mt-4 flex flex-col sm:flex-row justify-between items-center text-[10px] font-bold uppercase tracking-widest text-gray-600 select-none border-t border-white/5 pt-4">
     <span>© 2026 JUEGOS FORJA - REC Technologies</span>
