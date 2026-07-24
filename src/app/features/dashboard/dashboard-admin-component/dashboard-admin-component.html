@@ -29,18 +29,26 @@
       </button>
     </header>
 
-    <!-- SELECTOR DE SUB-PESTAÑAS -->
-    <div class="flex border-b border-white/5 mb-6 gap-2">
-      <button (click)="cambiarSubPestana('auditoria')"
-        [class]="subPestanaActiva === 'auditoria' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
-        class="px-5 py-3 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
-        <span class="material-symbols-outlined text-sm">analytics</span> Monitoreo de Roster
-      </button>
-      <button (click)="cambiarSubPestana('cuentas')"
-        [class]="subPestanaActiva === 'cuentas' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
-        class="px-5 py-3 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
-        <span class="material-symbols-outlined text-sm">domain</span> Creación de Cuentas Municipales
-      </button>
+    <!-- SELECTOR DE SUB-PESTAÑAS Y ACCIONES -->
+    <div class="flex justify-between items-end border-b border-white/5 mb-6">
+      <div class="flex gap-2">
+        <button (click)="cambiarSubPestana('auditoria')"
+          [class]="subPestanaActiva === 'auditoria' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
+          class="px-5 py-3 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">analytics</span> Monitoreo de Roster
+        </button>
+        <button (click)="cambiarSubPestana('cuentas')"
+          [class]="subPestanaActiva === 'cuentas' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
+          class="px-5 py-3 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">domain</span> Creación de Cuentas Municipales
+        </button>
+      </div>
+      <div class="pb-2">
+        <button (click)="descargarExcelGeneral()" type="button"
+          class="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500 text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-md">
+          <span class="material-symbols-outlined text-sm">download</span> Descargar Planilla Excel
+        </button>
+      </div>
     </div>
 
     <!-- SECCIÓN: ALTA DE CUENTAS MUNICIPALES -->

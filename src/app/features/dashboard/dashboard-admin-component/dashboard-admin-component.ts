@@ -261,6 +261,11 @@ export class DashboardAdminComponent implements OnInit {
     });
   }
 
+  descargarExcelGeneral(): void {
+    const url = `${environment.apiUrl}/reportes/generar?tipo=general`;
+    window.open(url, '_blank');
+  }
+
   logout(): void {
     localStorage.clear();
     this.router.navigate(['/login']);
