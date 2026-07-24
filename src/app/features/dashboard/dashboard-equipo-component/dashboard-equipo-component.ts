@@ -185,8 +185,8 @@ export class DashboardEquipoComponent implements OnInit {
         this.jugadorForm.get('peso')?.setValidators([Validators.required, Validators.min(1)]);
         this.jugadorForm.get('altura')?.setValidators([Validators.required, Validators.min(100)]);
       } else {
-        this.jugadorForm.get('peso')?.clearValidators();
-        this.jugadorForm.get('altura')?.clearValidators();
+        this.jugadorForm.get('peso')?.setValidators([Validators.required]);
+        this.jugadorForm.get('altura')?.setValidators([Validators.required]);
       }
 
       this.jugadorForm.get('peso')?.updateValueAndValidity();
