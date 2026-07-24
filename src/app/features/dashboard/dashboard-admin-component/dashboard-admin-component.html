@@ -322,6 +322,15 @@
           class="font-black uppercase tracking-widest">{{ atletaSeleccionado?.estado || 'PENDIENTE' }}</span>
       </div>
 
+      <div class="space-y-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          Motivo de Rechazo <span class="text-xs font-normal text-gray-500 lowercase">(Solo si dictamina desfavorable)</span>
+        </label>
+        <textarea [(ngModel)]="motivoRechazoInput" rows="2"
+          class="w-full px-4 py-2 bg-forja-dark-input border border-white/10 focus:border-red-500/50 rounded-xl text-xs text-white outline-none resize-none placeholder-gray-600"
+          placeholder="Ej: La ficha médica es ilegible o le falta la firma del médico..."></textarea>
+      </div>
+
       <footer class="flex items-center gap-3 border-t border-white/5 pt-4">
         <button [disabled]="procesandoDictamen" (click)="ejecutarDictamen('RECHAZADO')" type="button"
           class="flex-1 py-3 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">RECHAZAR</button>

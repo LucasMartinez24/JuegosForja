@@ -1,6 +1,6 @@
 // src/app/modules/admin/dashboard-admin/dashboard-admin.component.ts
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { toast } from 'ngx-sonner';
 import { AdminService } from '../../../core/services/admin.service';
@@ -12,7 +12,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-dashboard-admin-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './dashboard-admin-component.html',
   styleUrl: './dashboard-admin-component.css',
 })
@@ -31,6 +31,7 @@ export class DashboardAdminComponent implements OnInit {
 
   mostrarModalAuditoria = false;
   atletaSeleccionado: any = null;
+  motivoRechazoInput: string = '';
 
   mostrarModalDelegado = false;
   equipoSeleccionado: any = null;
@@ -215,15 +216,27 @@ export class DashboardAdminComponent implements OnInit {
   cerrarAuditoria(): void {
     this.mostrarModalAuditoria = false;
     this.atletaSeleccionado = null;
+    this.motivoRechazoInput = '';
     this.cdr.detectChanges();
   }
 
   ejecutarDictamen(estado: 'APROBADO' | 'RECHAZADO'): void {
     if (!this.atletaSeleccionado || this.procesandoDictamen) return;
+    
+    if (estado === 'RECHAZADO' && !this.motivoRechazoInput.trim()) {
+      toast.warning('Debe ingresar un motivo para el rechazo');
+      return;
+    }
+
     this.procesandoDictamen = true;
 
     const idAtleta = this.atletaSeleccionado.id;
     const copiaResguardoArbol = JSON.parse(JSON.stringify(this.disciplinas));
+    
+    const dictamenPayload: any = { estado };
+    if (estado === 'RECHAZADO') {
+      dictamenPayload.motivoRechazo = this.motivoRechazoInput.trim();
+    }
 
     this.disciplinas.forEach((disc) => {
       disc.municipios.forEach((mun: any) => {
@@ -231,6 +244,7 @@ export class DashboardAdminComponent implements OnInit {
           const atletaIdx = eq.atletas.findIndex((a: any) => a.id === idAtleta);
           if (atletaIdx !== -1) {
             eq.atletas[atletaIdx].estado = estado;
+            eq.atletas[atletaIdx].motivoRechazo = estado === 'RECHAZADO' ? dictamenPayload.motivoRechazo : null;
             eq.atletasPendientes = eq.atletas.filter((a: any) => a.estado === 'PENDIENTE').length;
           }
         });
@@ -245,7 +259,7 @@ export class DashboardAdminComponent implements OnInit {
     this.cerrarAuditoria();
     this.cdr.detectChanges();
 
-    this.adminService.dictaminarAtleta(idAtleta, estado).subscribe({
+    this.adminService.dictaminarAtleta(idAtleta, dictamenPayload).subscribe({
       next: () => {
         toast.success(`Dictamen Procesado`, {
           description: `Atleta marcado como ${estado.toLowerCase()}.`,

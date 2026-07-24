@@ -48,10 +48,10 @@ export class AdminService {
     });
   }
 
-  dictaminarAtleta(idAtleta: number, estado: string): Observable<any> {
+  dictaminarAtleta(idAtleta: string, payload: any): Observable<any> {
     return this.http.put(
       `${this.apiUrl}/dictaminar/${idAtleta}`,
-      { estado },
+      payload,
       { headers: this.obtenerHeaders() },
     );
   }
