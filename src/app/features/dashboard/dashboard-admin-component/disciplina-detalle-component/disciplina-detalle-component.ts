@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toast } from 'ngx-sonner';
 import { AdminService } from '../../../../core/services/admin.service';
+import { EditarAtletaModalComponent } from '../editar-atleta-modal-component/editar-atleta-modal-component';
 
 /**
  * Vista de DETALLE de una disciplina: al seleccionar un deporte en el catálogo,
@@ -17,7 +18,7 @@ import { AdminService } from '../../../../core/services/admin.service';
 @Component({
   selector: 'app-disciplina-detalle-component',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EditarAtletaModalComponent],
   templateUrl: './disciplina-detalle-component.html',
   styleUrl: './disciplina-detalle-component.css',
 })
@@ -27,6 +28,7 @@ export class DisciplinaDetalleComponent implements OnInit {
   disciplinaSeleccionada: any = null;
   equipos: any[] = [];
   ramaActiva: string = 'FEMENINO';
+  busquedaEquipo: string = '';
 
   mostrarModalEquipo = false;
   equipoSeleccionado: any = null;
@@ -35,6 +37,12 @@ export class DisciplinaDetalleComponent implements OnInit {
   atletaSeleccionado: any = null;
   motivoRechazoInput: string = '';
   procesandoDictamen = false;
+
+  atletaParaEditar: any = null;
+  contextoEdicionAtleta: any = null;
+  mostrarModalConfirmarEliminarAtleta = false;
+  atletaParaEliminar: any = null;
+  procesandoEliminacionAtleta = false;
 
   constructor(
     private adminService: AdminService,
@@ -93,6 +101,38 @@ export class DisciplinaDetalleComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  actualizarBusqueda(): void {
+    const orden = ['FEMENINO', 'MASCULINO', 'MIXTO'];
+    const primeraConEquipos = orden.find((key) => {
+      const lista =
+        key === 'FEMENINO'
+          ? this.equiposFemeninos
+          : key === 'MASCULINO'
+            ? this.equiposMasculinos
+            : this.equiposMixtos;
+      return lista.length > 0;
+    });
+    if (primeraConEquipos) {
+      this.ramaActiva = primeraConEquipos;
+    }
+    this.cdr.detectChanges();
+  }
+
+  limpiarBusqueda(): void {
+    this.busquedaEquipo = '';
+    this.actualizarBusqueda();
+  }
+
+  seleccionarEquipoSelect(event: any): void {
+    const id = Number(event.target.value);
+    event.target.value = '';
+    if (!id) return;
+    const eq = this.equipos.find((e) => e.idEquipo === id);
+    if (eq) {
+      this.abrirEquipo(eq);
+    }
+  }
+
   abrirEquipo(eq: any): void {
     this.equipoSeleccionado = eq;
     this.mostrarModalEquipo = true;
@@ -117,6 +157,76 @@ export class DisciplinaDetalleComponent implements OnInit {
     this.atletaSeleccionado = null;
     this.motivoRechazoInput = '';
     this.cdr.detectChanges();
+  }
+
+  abrirEditarAtleta(atleta: any): void {
+    this.atletaParaEditar = atleta;
+    this.contextoEdicionAtleta = {
+      disciplina: this.equipoSeleccionado?.disciplina || '',
+      equipo: this.equipoSeleccionado?.nombreEquipo || '',
+    };
+    this.cdr.detectChanges();
+  }
+
+  cerrarEditarAtleta(): void {
+    this.atletaParaEditar = null;
+    this.contextoEdicionAtleta = null;
+    this.cdr.detectChanges();
+  }
+
+  onAtletaActualizado(atleta: any): void {
+    this.cerrarEditarAtleta();
+    this.cerrarEquipo();
+    const id = this.disciplinaSeleccionada?.id;
+    if (id) this.cargarDetalle(id);
+  }
+
+  confirmarEliminarAtleta(atleta: any): void {
+    this.atletaParaEliminar = atleta;
+    this.mostrarModalConfirmarEliminarAtleta = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalConfirmarAtleta(): void {
+    this.mostrarModalConfirmarEliminarAtleta = false;
+    this.atletaParaEliminar = null;
+    this.procesandoEliminacionAtleta = false;
+    this.cdr.detectChanges();
+  }
+
+  ejecutarEliminacionAtleta(): void {
+    if (!this.atletaParaEliminar || this.procesandoEliminacionAtleta) return;
+    this.procesandoEliminacionAtleta = true;
+
+    const idAtleta = this.atletaParaEliminar.id;
+    const resguardo = JSON.parse(JSON.stringify(this.equipos));
+
+    this.equipos.forEach((eq: any) => {
+      if (eq.atletas) {
+        eq.atletas = eq.atletas.filter((a: any) => a.id !== idAtleta);
+      }
+    });
+    this.actualizarContadores();
+    this.cdr.detectChanges();
+
+    this.adminService.eliminarAtleta(idAtleta).subscribe({
+      next: (res) => {
+        this.procesandoEliminacionAtleta = false;
+        this.cerrarModalConfirmarAtleta();
+        this.cerrarEquipo();
+        toast.success('Atleta eliminado', { description: res.mensaje });
+        const id = this.disciplinaSeleccionada?.id;
+        if (id) this.cargarDetalle(id);
+      },
+      error: (err) => {
+        this.procesandoEliminacionAtleta = false;
+        this.equipos = resguardo;
+        this.cdr.detectChanges();
+        toast.error('Error', {
+          description: err.error?.error || 'No se pudo eliminar el atleta.',
+        });
+      },
+    });
   }
 
   ejecutarDictamen(estado: 'APROBADO' | 'RECHAZADO'): void {
@@ -176,16 +286,41 @@ export class DisciplinaDetalleComponent implements OnInit {
     });
   }
 
+  get equiposFiltrados(): any[] {
+    const term = this.busquedaEquipo.trim().toLowerCase();
+    if (!term) return this.equipos;
+    return this.equipos.filter((e) =>
+      [
+        e.nombreEquipo,
+        e.siglas,
+        e.localidadNombre,
+        e.municipio,
+        e.representante,
+        e.usernameRepresentante,
+        e.dniRepresentante,
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(term),
+    );
+  }
+
+  get equiposOrdenados(): any[] {
+    return [...this.equipos].sort((a, b) =>
+      (a.nombreEquipo || '').localeCompare(b.nombreEquipo || ''),
+    );
+  }
+
   get equiposFemeninos(): any[] {
-    return this.equipos.filter((e) => e.ramaPrincipal === 'FEMENINO');
+    return this.equiposFiltrados.filter((e) => e.ramaPrincipal === 'FEMENINO');
   }
 
   get equiposMasculinos(): any[] {
-    return this.equipos.filter((e) => e.ramaPrincipal === 'MASCULINO');
+    return this.equiposFiltrados.filter((e) => e.ramaPrincipal === 'MASCULINO');
   }
 
   get equiposMixtos(): any[] {
-    return this.equipos.filter((e) => e.ramaPrincipal === 'MIXTO');
+    return this.equiposFiltrados.filter((e) => e.ramaPrincipal === 'MIXTO');
   }
 
   get ramasDisponibles(): any[] {

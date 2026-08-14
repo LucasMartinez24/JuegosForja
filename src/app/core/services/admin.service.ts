@@ -91,4 +91,33 @@ export class AdminService {
       formData,
     );
   }
+
+  // =========================================================================
+  // Edición y baja de atletas (roster admin y vista por género)
+  // =========================================================================
+  actualizarAtleta(idAtleta: string, payload: any): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}/actualizar-atleta/${idAtleta}`,
+      payload,
+    );
+  }
+
+  obtenerAtletaDetalle(idAtleta: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/atleta/${idAtleta}`);
+  }
+
+  eliminarAtleta(idAtleta: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/eliminar-atleta/${idAtleta}`);
+  }
+
+  // =========================================================================
+  // CRUD de delegados (representantes de equipos)
+  // =========================================================================
+  listarDelegados(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/delegados`);
+  }
+
+  actualizarDelegado(idUsuario: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/delegado/${idUsuario}`, payload);
+  }
 }

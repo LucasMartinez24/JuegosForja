@@ -31,6 +31,8 @@ export class AgregarAtletaComponent implements OnInit {
   procesando = false;
 
   equiposDisponibles: any[] = [];
+  equiposFiltrados: any[] = [];
+  disciplinasConEquipos: any[] = [];
   pruebasDisponibles: any[] = [];
   pruebasFiltradas: any[] = [];
   pruebaSeleccionadaData: any = null;
@@ -56,6 +58,7 @@ export class AgregarAtletaComponent implements OnInit {
 
   ngOnInit(): void {
     this.atletaForm = this.fb.group({
+      idDisciplina: ['', Validators.required],
       idEquipo: ['', Validators.required],
       idPrueba1: ['', Validators.required],
       idPrueba2: [''],
@@ -79,14 +82,31 @@ export class AgregarAtletaComponent implements OnInit {
     this.adminService.listarEquiposDisponibles().subscribe({
       next: (res) => {
         this.equiposDisponibles = res || [];
+        const mapa = new Map<number, any>();
+        (res || []).forEach((e: any) => {
+          if (e.disciplina && !mapa.has(e.disciplina.id)) {
+            mapa.set(e.disciplina.id, e.disciplina);
+          }
+        });
+        this.disciplinasConEquipos = Array.from(mapa.values());
         this.cdr.detectChanges();
       },
       error: () => toast.error('No se pudo cargar el listado de equipos.'),
     });
   }
 
-  onEquipoChange(): void {
-    const id = this.atletaForm.get('idEquipo')?.value;
+  onDisciplinaChange(): void {
+    const id = this.atletaForm.get('idDisciplina')?.value;
+    this.equiposFiltrados = id
+      ? this.equiposDisponibles.filter(
+          (e) => e.disciplina?.id === parseInt(id, 10),
+        )
+      : [];
+    this.atletaForm.patchValue({ idEquipo: '' });
+    this.resetEquipoYPruebas();
+  }
+
+  resetEquipoYPruebas(): void {
     this.pruebasDisponibles = [];
     this.pruebasFiltradas = [];
     this.pruebaSeleccionadaData = null;
@@ -108,6 +128,11 @@ export class AgregarAtletaComponent implements OnInit {
     this.atletaForm.get('altura')?.clearValidators();
     this.atletaForm.get('peso')?.updateValueAndValidity();
     this.atletaForm.get('altura')?.updateValueAndValidity();
+  }
+
+  onEquipoChange(): void {
+    const id = this.atletaForm.get('idEquipo')?.value;
+    this.resetEquipoYPruebas();
 
     if (!id) return;
 
@@ -178,8 +203,10 @@ export class AgregarAtletaComponent implements OnInit {
         this.atletaForm.get('peso')?.setValidators([Validators.required, Validators.min(1)]);
         this.atletaForm.get('altura')?.setValidators([Validators.required, Validators.min(100)]);
       } else {
-        this.atletaForm.get('peso')?.setValidators([Validators.required]);
-        this.atletaForm.get('altura')?.setValidators([Validators.required]);
+        // Disciplinas que no exigen peso: queda como campo OPCIONAL,
+        // el operador puede cargarlo si lo tiene.
+        this.atletaForm.get('peso')?.clearValidators();
+        this.atletaForm.get('altura')?.clearValidators();
       }
       this.atletaForm.get('peso')?.updateValueAndValidity();
       this.atletaForm.get('altura')?.updateValueAndValidity();
@@ -236,6 +263,7 @@ export class AgregarAtletaComponent implements OnInit {
         this.procesando = false;
         toast.success('Atleta registrado', { description: res.mensaje });
         this.atletaForm.reset({
+          idDisciplina: '',
           idEquipo: '',
           idPrueba1: '',
           idPrueba2: '',
@@ -244,6 +272,7 @@ export class AgregarAtletaComponent implements OnInit {
           idPrueba5: '',
           idPrueba6: '',
         });
+        this.equiposFiltrados = [];
         this.archivos = { dniFrente: null, dniDorso: null, fichaMedica: null, cud: null };
         this.pruebasDisponibles = [];
         this.pruebasFiltradas = [];

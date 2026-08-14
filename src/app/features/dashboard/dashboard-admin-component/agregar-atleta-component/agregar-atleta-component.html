@@ -17,14 +17,24 @@
 
   <form [formGroup]="atletaForm" (ngSubmit)="onSubmit()" class="space-y-4">
 
-    <!-- Selección de equipo -->
+    <!-- Cascada: Disciplina primero -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Disciplina</label>
+      <select formControlName="idDisciplina" (change)="onDisciplinaChange()"
+        class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer">
+        <option value="" disabled>Seleccionar disciplina</option>
+        <option *ngFor="let d of disciplinasConEquipos" [value]="d.id">{{ d.nombre }}</option>
+      </select>
+    </div>
+
+    <!-- Selección de equipo (filtrado por disciplina) -->
     <div class="flex flex-col gap-1.5">
       <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Equipo destinatario</label>
-      <select formControlName="idEquipo" (change)="onEquipoChange()"
-        class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer">
+      <select formControlName="idEquipo" (change)="onEquipoChange()" [disabled]="!atletaForm.get('idDisciplina')?.value"
+        class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-40">
         <option value="" disabled>Seleccionar equipo</option>
-        <option *ngFor="let e of equiposDisponibles" [value]="e.id">
-          {{ e.nombre }} — {{ e.disciplina?.nombre }} ({{ e.municipio }})
+        <option *ngFor="let e of equiposFiltrados" [value]="e.id">
+          {{ e.nombre }} — {{ e.municipio }}
         </option>
       </select>
     </div>
@@ -99,6 +109,8 @@
         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
           Peso (kg) <span *ngIf="pruebaSeleccionadaData?.requierePeso" class="text-forja-naranja font-black">Máx:
             {{ pruebaSeleccionadaData?.pesoMaximo }}</span>
+          <span *ngIf="pruebaSeleccionadaData && !pruebaSeleccionadaData.requierePeso"
+            class="text-gray-500 font-bold">(Opcional)</span>
         </label>
         <input formControlName="peso" type="number" step="0.1"
           class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none"
@@ -107,7 +119,10 @@
           class="text-[10px] text-forja-naranja font-bold">Peso requerido.</span>
       </div>
       <div class="flex flex-col gap-1.5">
-        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Altura (cm)</label>
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Altura (cm)
+          <span *ngIf="pruebaSeleccionadaData && !pruebaSeleccionadaData.requierePeso"
+            class="text-gray-500 font-bold">(Opcional)</span>
+        </label>
         <input formControlName="altura" type="number"
           class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none"
           placeholder="Ej. 172" />

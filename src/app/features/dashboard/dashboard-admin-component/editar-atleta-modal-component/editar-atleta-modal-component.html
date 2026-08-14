@@ -1,0 +1,203 @@
+<div
+  class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-150 flex items-center justify-center p-4 animate-fade-in">
+  <div
+    class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-130 p-6 space-y-5 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+
+    <header class="flex justify-between items-start border-b border-white/5 pb-3">
+      <div>
+        <span class="text-[9px] font-black text-forja-ocre uppercase tracking-widest">Edición de Ficha Deportiva</span>
+        <h3 class="text-md font-black text-white uppercase tracking-wide mt-0.5">
+          {{ atleta?.apellido }}, {{ atleta?.nombre }}
+        </h3>
+        <p class="text-[11px] text-gray-400 mt-0.5 font-mono">DNI {{ atleta?.dni }}</p>
+        <div *ngIf="contexto?.disciplina || contexto?.equipo"
+          class="flex flex-wrap items-center gap-1.5 mt-1.5">
+          <span *ngIf="contexto?.disciplina"
+            class="text-[9px] font-black uppercase tracking-wider bg-forja-azul/10 border border-forja-azul/20 text-blue-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <span class="material-symbols-outlined text-[11px]">emoji_events</span> {{ contexto.disciplina }}
+          </span>
+          <span *ngIf="contexto?.equipo"
+            class="text-[9px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-gray-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <span class="material-symbols-outlined text-[11px]">shield</span> {{ contexto.equipo }}
+          </span>
+        </div>
+      </div>
+      <button (click)="onCancelar()" type="button"
+        class="text-gray-500 hover:text-white transition-colors cursor-pointer p-1">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </header>
+
+    <!-- Documentación actual (solo lectura) -->
+    <div class="space-y-1.5">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Documentación actual (sin cambios)</p>
+      <div class="flex flex-wrap gap-2">
+        <a *ngIf="atleta?.urlDniFrente" [href]="atleta.urlDniFrente" target="_blank"
+          class="px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-forja-naranja rounded-lg text-[10px] text-gray-300 font-bold transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-forja-naranja">badge</span> DNI Frente
+        </a>
+        <a *ngIf="atleta?.urlDniDorso" [href]="atleta.urlDniDorso" target="_blank"
+          class="px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-forja-naranja rounded-lg text-[10px] text-gray-300 font-bold transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-forja-naranja">badge</span> DNI Dorso
+        </a>
+        <a *ngIf="atleta?.urlFichaMedica" [href]="atleta.urlFichaMedica" target="_blank"
+          class="px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-emerald-500 rounded-lg text-[10px] text-emerald-400 font-bold transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-emerald-400">medical_services</span> Ficha Médica
+        </a>
+        <a *ngIf="atleta?.urlCud" [href]="atleta.urlCud" target="_blank"
+          class="px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-forja-ocre rounded-lg text-[10px] text-forja-ocre font-bold transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-forja-ocre">accessibility_new</span> CUD
+        </a>
+      </div>
+    </div>
+
+    <form [formGroup]="atletaForm" (ngSubmit)="onSubmit()" class="space-y-4">
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">DNI (Sin Puntos)</label>
+          <input formControlName="dni" type="text"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+          <span *ngIf="atletaForm.get('dni')?.touched && atletaForm.get('dni')?.invalid"
+            class="text-[10px] text-forja-naranja font-bold">DNI inválido (7 u 8 números).</span>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rama / Género</label>
+          <select formControlName="genero" (change)="onGeneroChange()"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer">
+            <option value="" disabled>Seleccionar</option>
+            <option value="MASCULINO">Masculino</option>
+            <option value="FEMENINO">Femenino</option>
+            <option value="MIXTO">Mixto</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nombre/s</label>
+          <input formControlName="nombre" type="text"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apellido/s</label>
+          <input formControlName="apellido" type="text"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          F. Nacimiento <span *ngIf="pruebaSeleccionadaData" class="text-forja-ocre">({{ anioMinPrueba }}-{{
+            anioMaxPrueba }})</span>
+        </label>
+        <input formControlName="fechaNacimiento" type="date"
+          class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            Peso (kg) <span *ngIf="pruebaSeleccionadaData?.requierePeso" class="text-forja-naranja font-black">Máx:
+              {{ pruebaSeleccionadaData?.pesoMaximo }}</span>
+            <span *ngIf="pruebaSeleccionadaData && !pruebaSeleccionadaData.requierePeso"
+              class="text-gray-500 font-bold">(Opcional)</span>
+          </label>
+          <input formControlName="peso" type="number" step="0.1"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+          <span *ngIf="atletaForm.get('peso')?.touched && atletaForm.get('peso')?.invalid"
+            class="text-[10px] text-forja-naranja font-bold">Peso requerido.</span>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Altura (cm)
+            <span *ngIf="pruebaSeleccionadaData && !pruebaSeleccionadaData.requierePeso"
+              class="text-gray-500 font-bold">(Opcional)</span>
+          </label>
+          <input formControlName="altura" type="number"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+          <span *ngIf="atletaForm.get('altura')?.touched && atletaForm.get('altura')?.invalid"
+            class="text-[10px] text-forja-naranja font-bold">Altura requerida.</span>
+        </div>
+      </div>
+
+      <!-- Prueba principal -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prueba Principal de
+          Inscripción</label>
+        <div class="relative">
+          <select formControlName="idPrueba1" (change)="onPrueba1Change()" [disabled]="cargandoPruebas"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none disabled:opacity-40">
+            <option value="" disabled>Seleccionar Instancia Oficial</option>
+            <option *ngFor="let p of pruebasFiltradas" [value]="p.id">
+              {{ p.nombrePrueba }} <span *ngIf="p.maxJugadores">(Cupo Máx: {{ p.maxJugadores }})</span>
+            </option>
+          </select>
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+            <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pruebas adicionales -->
+      <ng-container *ngIf="pruebasFiltradas.length > 0">
+        <div *ngIf="esAtletismo" class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">Segunda Prueba Opcional</label>
+          <div class="relative">
+            <select formControlName="idPrueba2"
+              class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none">
+              <option value="">Ninguna - Participa solo en una prueba</option>
+              <option *ngFor="let p of pruebasFiltradas" [value]="p.id"
+                [disabled]="atletaForm.get('idPrueba1')?.value == p.id">
+                {{ p.nombrePrueba }}
+              </option>
+            </select>
+            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+              <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="esNatacion" class="space-y-3">
+          <div class="border-t border-white/5 my-2 pt-2">
+            <span class="text-[9px] font-bold text-sky-400 uppercase tracking-widest">Pruebas Adicionales de Natación
+              (Opcionales - Máximo 5)</span>
+          </div>
+          <div *ngFor="let index of [2, 3, 4, 5, 6]" class="flex flex-col gap-1.5">
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prueba Adicional #{{
+              index - 1 }}</label>
+            <div class="relative">
+              <select [formControlName]="'idPrueba' + index"
+                class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none cursor-pointer appearance-none">
+                <option value="">Ninguna prueba adicional seleccionada</option>
+                <option *ngFor="let p of pruebasFiltradas" [value]="p.id" [disabled]="
+                    atletaForm.get('idPrueba1')?.value == p.id ||
+                    (index > 2 && atletaForm.get('idPrueba2')?.value == p.id) ||
+                    (index > 3 && atletaForm.get('idPrueba3')?.value == p.id) ||
+                    (index > 4 && atletaForm.get('idPrueba4')?.value == p.id) ||
+                    (index > 5 && atletaForm.get('idPrueba5')?.value == p.id)
+                  ">
+                  {{ p.nombrePrueba }}
+                </option>
+              </select>
+              <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <footer class="flex items-center gap-3 border-t border-white/5 pt-4">
+        <button (click)="onCancelar()" [disabled]="procesando" type="button"
+          class="flex-1 py-3 bg-white/2 border border-white/10 hover:bg-white/5 text-gray-400 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+          Cancelar
+        </button>
+        <button [disabled]="procesando" type="submit"
+          class="flex-1 py-3 bg-linear-to-r from-forja-naranja to-orange-600 hover:from-orange-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2">
+          <span *ngIf="!procesando">Guardar Cambios</span>
+          <span *ngIf="procesando" class="animate-pulse">Guardando...</span>
+        </button>
+      </footer>
+    </form>
+  </div>
+</div>

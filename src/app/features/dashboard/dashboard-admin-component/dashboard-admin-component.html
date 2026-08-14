@@ -73,7 +73,8 @@
 
     <!-- SECCIÓN: ALTA DE CLUBES / USUARIOS CON DISCIPLINA ASIGNADA -->
     <section *ngIf="subPestanaActiva === 'clubes'"
-      class="max-w-170 mx-auto bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl space-y-4 animate-fade-in">
+      class="w-full bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl space-y-4 animate-fade-in">
+      <div class="max-w-170 mx-auto w-full space-y-4">
       <div class="flex items-start gap-3">
         <div
           class="h-10 w-10 rounded-xl bg-linear-to-br from-forja-naranja to-orange-600 flex items-center justify-center text-white shadow-lg shadow-forja-naranja/20 shrink-0">
@@ -86,7 +87,22 @@
         </div>
       </div>
 
-      <form [formGroup]="clubForm" (ngSubmit)="onCrearClub()" class="space-y-4">
+      <!-- Selector interno: Alta de Club | Gestión de Delegados -->
+      <div class="flex gap-2 border-b border-white/5 pb-0">
+        <button (click)="cambiarSeccionClubes('alta')" type="button"
+          [class]="seccionClubes === 'alta' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
+          class="px-4 py-2 border-b-2 text-[10px] uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">add_business</span> Alta de Club
+        </button>
+        <button (click)="cambiarSeccionClubes('delegados')" type="button"
+          [class]="seccionClubes === 'delegados' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
+          class="px-4 py-2 border-b-2 text-[10px] uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">manage_accounts</span> Gestión de Delegados
+        </button>
+      </div>
+
+      <!-- FORMULARIO DE ALTA -->
+      <form *ngIf="seccionClubes === 'alta'" [formGroup]="clubForm" (ngSubmit)="onCrearClub()" class="space-y-4">
         <div class="flex flex-col gap-1.5">
           <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nombre del Club / Equipo</label>
           <input formControlName="nombreClub" type="text" placeholder="Ej. Club Atlético Gorriti"
@@ -156,6 +172,58 @@
           {{ procesandoClubBtn ? 'CREANDO CLUB...' : 'REGISTRAR CLUB Y DISCIPLINA' }}
         </button>
       </form>
+      </div>
+
+      <!-- GESTIÓN DE DELEGADOS -->
+      <div *ngIf="seccionClubes === 'delegados'" class="space-y-4 animate-fade-in">
+
+        <div class="flex flex-col items-center justify-center py-16 space-y-3" *ngIf="cargandoDelegados">
+          <div class="h-8 w-8 border-4 border-forja-naranja border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500">Recuperando delegados...</p>
+        </div>
+
+        <div *ngIf="!cargandoDelegados && delegados.length === 0"
+          class="py-12 text-center text-[11px] text-gray-500 border border-dashed border-white/5 rounded-xl">
+          No hay delegados registrados en el sistema.
+        </div>
+
+        <div *ngIf="!cargandoDelegados && delegados.length > 0"
+          class="overflow-x-auto rounded-xl border border-white/5 shadow-md">
+          <table class="w-full text-left text-xs text-gray-300 border-collapse">
+            <thead>
+              <tr
+                class="bg-forja-dark-input/60 border-b border-white/5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <th class="p-4">Delegado / Representante</th>
+                <th class="p-4">DNI</th>
+                <th class="p-4">Usuario</th>
+                <th class="p-4">Club / Equipo</th>
+                <th class="p-4">Disciplina</th>
+                <th class="p-4 text-center">Localidad</th>
+                <th class="p-4 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 bg-forja-dark-card/10">
+              <tr class="hover:bg-white/1 transition-colors" *ngFor="let d of delegados">
+                <td class="p-4 font-bold text-white uppercase tracking-wide">
+                  {{ d.apellido }}, {{ d.nombre }}
+                </td>
+                <td class="p-4 font-mono text-gray-400 text-[11px]">DNI {{ d.dni }}</td>
+                <td class="p-4 text-forja-ocre font-bold text-[11px]">{{ d.username }}</td>
+                <td class="p-4 text-gray-300 text-[11px]">{{ d.equipo?.nombre || '—' }}</td>
+                <td class="p-4 text-gray-400 text-[11px]">{{ d.equipo?.disciplina || '—' }}</td>
+                <td class="p-4 text-center text-gray-400 text-[11px]">{{ d.localidad || '—' }}</td>
+                <td class="p-4 text-right">
+                  <button (click)="abrirEditarDelegado(d)" type="button"
+                    class="px-3 py-1.5 bg-forja-azul/20 hover:bg-forja-azul text-blue-400 hover:text-white border border-forja-azul/30 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ml-auto shadow-md">
+                    <span class="material-symbols-outlined text-xs">edit</span> Editar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
     </section>
 
     <!-- SECCIÓN: ARBOL DE AUDITORÍA Y LISTAS DE BUENA FE -->
@@ -289,10 +357,20 @@
                             </span>
                           </td>
                           <td class="p-4 text-right">
-                            <button (click)="abrirAuditoria(atleta)" type="button"
-                              class="px-3 py-1.5 bg-forja-naranja hover:bg-orange-600 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg shadow-md transition-all cursor-pointer flex items-center gap-1 ml-auto">
-                              <span class="material-symbols-outlined text-xs">visibility</span> Evaluar Ficha
-                            </button>
+                            <div class="flex items-center gap-2 justify-end">
+                              <button (click)="confirmarEliminarAtleta(atleta)" type="button" title="Eliminar atleta"
+                                class="p-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500 text-red-400 rounded-lg transition-all cursor-pointer flex items-center">
+                                <span class="material-symbols-outlined text-sm">person_remove</span>
+                              </button>
+                              <button (click)="abrirEditarAtleta(atleta, disc.nombreDisciplina, eq.nombreEquipo)" type="button"
+                                class="px-3 py-1.5 bg-forja-azul/20 hover:bg-forja-azul text-blue-400 hover:text-white border border-forja-azul/30 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 shadow-md">
+                                <span class="material-symbols-outlined text-xs">edit</span> Editar
+                              </button>
+                              <button (click)="abrirAuditoria(atleta)" type="button"
+                                class="px-3 py-1.5 bg-forja-naranja hover:bg-orange-600 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg shadow-md transition-all cursor-pointer flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs">visibility</span> Evaluar Ficha
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       </tbody>
@@ -702,5 +780,125 @@
       </button>
     </footer>
 
+  </div>
+</div>
+
+<!-- MODAL: EDICIÓN DE ATLETA (roster admin) -->
+<app-editar-atleta-modal *ngIf="atletaParaEditar" [atleta]="atletaParaEditar" [contexto]="contextoEdicionAtleta"
+  (actualizado)="onAtletaActualizado($event)" (cerrado)="cerrarEditarAtleta()"></app-editar-atleta-modal>
+
+<!-- MODAL: CONFIRMACIÓN ELIMINACIÓN DE ATLETA -->
+<div class="fixed inset-0 bg-black/80 backdrop-blur-md z-200 flex items-center justify-center p-4 animate-fade-in"
+  *ngIf="mostrarModalConfirmarEliminarAtleta">
+  <div
+    class="bg-linear-to-b from-forja-dark-card to-zinc-950 border border-red-500/20 rounded-2xl w-full max-w-100 p-6 space-y-5 shadow-2xl relative shadow-red-950/20">
+
+    <div
+      class="mx-auto w-12 h-12 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center shadow-lg shadow-red-500/5">
+      <span class="material-symbols-outlined text-2xl font-black">person_remove</span>
+    </div>
+
+    <div class="text-center space-y-1.5">
+      <h3 class="text-sm font-black text-white uppercase tracking-wider">¿Eliminar Atleta?</h3>
+      <p class="text-[11px] font-mono text-forja-naranja uppercase font-bold tracking-wide">
+        {{ atletaParaEliminar?.apellido }}, {{ atletaParaEliminar?.nombre }}
+      </p>
+      <p class="text-[10px] text-gray-500">DNI {{ atletaParaEliminar?.dni }}</p>
+    </div>
+
+    <div
+      class="bg-red-500/5 border border-red-500/10 p-3.5 rounded-xl text-[11px] text-red-400 leading-relaxed text-center font-medium">
+      ⚠️ Se eliminará la ficha del atleta y su documentación adjunta de forma permanente. Esta acción es irreversible.
+    </div>
+
+    <footer class="flex items-center gap-3 border-t border-white/5 pt-4">
+      <button (click)="cerrarModalConfirmarAtleta()" [disabled]="procesandoEliminacionAtleta" type="button"
+        class="flex-1 py-3 bg-white/2 border border-white/10 hover:bg-white/5 text-gray-400 hover:text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+        Cancelar
+      </button>
+      <button (click)="ejecutarEliminacionAtleta()" [disabled]="procesandoEliminacionAtleta" type="button"
+        class="flex-1 py-3 bg-linear-to-r from-red-600 to-red-700 hover:from-red-500 text-white font-black text-xs rounded-xl uppercase tracking-wider shadow-lg shadow-red-950/50 transition-all cursor-pointer flex items-center justify-center gap-2">
+        <span *ngIf="!procesandoEliminacionAtleta">Eliminar</span>
+        <span *ngIf="procesandoEliminacionAtleta" class="animate-pulse">Eliminando...</span>
+      </button>
+    </footer>
+
+  </div>
+</div>
+
+<!-- MODAL: EDICIÓN DE DELEGADO -->
+<div
+  class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-150 flex items-center justify-center p-4 animate-fade-in"
+  *ngIf="delegadoParaEditar && delegadoForm">
+  <div
+    class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-120 p-6 space-y-5 shadow-2xl relative">
+
+    <header class="flex justify-between items-start border-b border-white/5 pb-3">
+      <div>
+        <span class="text-[9px] font-black text-forja-ocre uppercase tracking-widest">Edición de Delegado</span>
+        <h3 class="text-md font-black text-white uppercase tracking-wide mt-0.5">
+          {{ delegadoParaEditar?.apellido }}, {{ delegadoParaEditar?.nombre }}
+        </h3>
+        <p class="text-[11px] text-gray-400 mt-0.5">Club: <span class="text-forja-ocre font-bold">{{
+            delegadoParaEditar?.equipo?.nombre }}</span></p>
+      </div>
+      <button (click)="cerrarEditarDelegado()" type="button"
+        class="text-gray-500 hover:text-white transition-colors cursor-pointer p-1">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </header>
+
+    <form [formGroup]="delegadoForm" (ngSubmit)="guardarDelegado()" class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nombre</label>
+          <input formControlName="nombre" type="text"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Apellido</label>
+          <input formControlName="apellido" type="text"
+            class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">DNI (Sin Puntos)</label>
+        <input formControlName="dni" type="text"
+          class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+        <span *ngIf="delegadoForm.get('dni')?.touched && delegadoForm.get('dni')?.invalid"
+          class="text-[10px] text-forja-naranja font-bold">DNI inválido (7 u 8 números).</span>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nombre de Usuario</label>
+        <input formControlName="username" type="text"
+          class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+        <span *ngIf="delegadoForm.get('username')?.touched && delegadoForm.get('username')?.invalid"
+          class="text-[10px] text-forja-naranja font-bold">Mínimo 4 caracteres.</span>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+          Nueva Contraseña <span class="text-[9px] text-gray-600 lowercase">(dejar vacía para conservar la actual)</span>
+        </label>
+        <input formControlName="password" type="password" placeholder="••••••"
+          class="w-full px-4 py-2.5 bg-forja-dark-input border border-white/10 focus:border-forja-naranja rounded-xl text-xs text-white outline-none" />
+        <span *ngIf="delegadoForm.get('password')?.touched && delegadoForm.get('password')?.invalid"
+          class="text-[10px] text-forja-naranja font-bold">Mínimo 6 caracteres.</span>
+      </div>
+
+      <footer class="flex items-center gap-3 border-t border-white/5 pt-4">
+        <button (click)="cerrarEditarDelegado()" [disabled]="procesandoDelegado" type="button"
+          class="flex-1 py-3 bg-white/2 border border-white/10 hover:bg-white/5 text-gray-400 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+          Cancelar
+        </button>
+        <button [disabled]="procesandoDelegado" type="submit"
+          class="flex-1 py-3 bg-linear-to-r from-forja-naranja to-orange-600 hover:from-orange-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2">
+          <span *ngIf="!procesandoDelegado">Guardar</span>
+          <span *ngIf="procesandoDelegado" class="animate-pulse">Guardando...</span>
+        </button>
+      </footer>
+    </form>
   </div>
 </div>

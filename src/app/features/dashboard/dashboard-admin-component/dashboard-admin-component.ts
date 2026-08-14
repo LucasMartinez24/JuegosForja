@@ -9,11 +9,12 @@ import { HttpClient } from '@angular/common/http';
 import { DelegacionService } from '../../../core/services/delegacion.service';
 import { environment } from '../../../../environments/environment';
 import { AgregarAtletaComponent } from './agregar-atleta-component/agregar-atleta-component';
+import { EditarAtletaModalComponent } from './editar-atleta-modal-component/editar-atleta-modal-component';
 
 @Component({
   selector: 'app-dashboard-admin-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, AgregarAtletaComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, AgregarAtletaComponent, EditarAtletaModalComponent],
   templateUrl: './dashboard-admin-component.html',
   styleUrl: './dashboard-admin-component.css',
 })
@@ -29,6 +30,21 @@ export class DashboardAdminComponent implements OnInit {
   clubForm!: FormGroup;
   procesandoClubBtn = false;
   catalogoDisciplinas: any[] = [];
+  seccionClubes: 'alta' | 'delegados' = 'alta';
+
+  // === CRUD de Delegados (representantes de equipos) ===
+  delegados: any[] = [];
+  cargandoDelegados = false;
+  delegadoParaEditar: any = null;
+  delegadoForm!: FormGroup;
+  procesandoDelegado = false;
+
+  // === Edición / Baja de Atletas en el roster ===
+  atletaParaEditar: any = null;
+  contextoEdicionAtleta: any = null;
+  mostrarModalConfirmarEliminarAtleta = false;
+  atletaParaEliminar: any = null;
+  procesandoEliminacionAtleta = false;
 
   // === Vista de Equipos por Rama (pestaña dedicada por disciplina) ===
   disciplinaSeleccionada: any = null;
@@ -131,6 +147,74 @@ export class DashboardAdminComponent implements OnInit {
         });
       },
     });
+  }
+
+  cambiarSeccionClubes(seccion: 'alta' | 'delegados'): void {
+    this.seccionClubes = seccion;
+    if (seccion === 'delegados') this.cargarDelegados();
+    this.cdr.detectChanges();
+  }
+
+  cargarDelegados(): void {
+    this.cargandoDelegados = true;
+    this.adminService.listarDelegados().subscribe({
+      next: (res) => {
+        this.delegados = res || [];
+        this.cargandoDelegados = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoDelegados = false;
+        toast.error('No se pudo cargar el listado de delegados.');
+      },
+    });
+  }
+
+  abrirEditarDelegado(d: any): void {
+    this.delegadoParaEditar = d;
+    this.delegadoForm = this.fb.group({
+      nombre: [d.nombre || '', [Validators.required, Validators.minLength(3)]],
+      apellido: [d.apellido || '', [Validators.required, Validators.minLength(3)]],
+      dni: [d.dni || '', [Validators.required, Validators.pattern('^[0-9]{7,8}$')]],
+      username: [d.username || '', [Validators.required, Validators.minLength(4)]],
+      password: [''],
+    });
+    this.cdr.detectChanges();
+  }
+
+  cerrarEditarDelegado(): void {
+    this.delegadoParaEditar = null;
+    this.delegadoForm = null as any;
+    this.cdr.detectChanges();
+  }
+
+  guardarDelegado(): void {
+    if (!this.delegadoParaEditar || !this.delegadoForm) return;
+    if (this.delegadoForm.invalid) {
+      this.delegadoForm.markAllAsTouched();
+      return;
+    }
+    this.procesandoDelegado = true;
+    const payload = { ...this.delegadoForm.value };
+    if (!payload.password) delete payload.password;
+
+    this.adminService
+      .actualizarDelegado(this.delegadoParaEditar.idUsuario, payload)
+      .subscribe({
+        next: (res) => {
+          this.procesandoDelegado = false;
+          toast.success('Delegado actualizado', { description: res.mensaje });
+          this.cargarDelegados();
+          this.cerrarEditarDelegado();
+        },
+        error: (err) => {
+          this.procesandoDelegado = false;
+          toast.error('No se pudo actualizar el delegado', {
+            description: err.error?.error,
+          });
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   verEquiposPorDisciplina(disciplina: any): void {
@@ -298,6 +382,103 @@ export class DashboardAdminComponent implements OnInit {
     this.atletaSeleccionado = null;
     this.motivoRechazoInput = '';
     this.cdr.detectChanges();
+  }
+
+  abrirEditarAtleta(atleta: any, nombreDisciplina?: string, nombreEquipo?: string): void {
+    this.atletaParaEditar = atleta;
+    this.contextoEdicionAtleta = {
+      disciplina: nombreDisciplina || '',
+      equipo: nombreEquipo || '',
+    };
+    this.cdr.detectChanges();
+  }
+
+  cerrarEditarAtleta(): void {
+    this.atletaParaEditar = null;
+    this.contextoEdicionAtleta = null;
+    this.cdr.detectChanges();
+  }
+
+  onAtletaActualizado(atleta: any): void {
+    const idAtleta = atleta.id;
+    this.disciplinas.forEach((disc) => {
+      disc.municipios.forEach((mun: any) => {
+        mun.equipos.forEach((eq: any) => {
+          const idx = eq.atletas.findIndex((a: any) => a.id === idAtleta);
+          if (idx !== -1) eq.atletas[idx] = atleta;
+        });
+      });
+    });
+    this.recalcularArbol();
+    this.cerrarEditarAtleta();
+    this.cdr.detectChanges();
+  }
+
+  confirmarEliminarAtleta(atleta: any): void {
+    this.atletaParaEliminar = atleta;
+    this.mostrarModalConfirmarEliminarAtleta = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalConfirmarAtleta(): void {
+    this.mostrarModalConfirmarEliminarAtleta = false;
+    this.atletaParaEliminar = null;
+    this.procesandoEliminacionAtleta = false;
+    this.cdr.detectChanges();
+  }
+
+  ejecutarEliminacionAtleta(): void {
+    if (!this.atletaParaEliminar || this.procesandoEliminacionAtleta) return;
+    this.procesandoEliminacionAtleta = true;
+
+    const idAtleta = this.atletaParaEliminar.id;
+    const resguardoArbol = JSON.parse(JSON.stringify(this.disciplinas));
+
+    this.disciplinas.forEach((disc) => {
+      disc.municipios.forEach((mun: any) => {
+        mun.equipos.forEach((eq: any) => {
+          eq.atletas = eq.atletas.filter((a: any) => a.id !== idAtleta);
+        });
+      });
+    });
+    this.recalcularArbol();
+    this.cdr.detectChanges();
+
+    this.adminService.eliminarAtleta(idAtleta).subscribe({
+      next: (res) => {
+        this.procesandoEliminacionAtleta = false;
+        this.cerrarModalConfirmarAtleta();
+        toast.success('Atleta eliminado', { description: res.mensaje });
+      },
+      error: (err) => {
+        this.procesandoEliminacionAtleta = false;
+        this.disciplinas = resguardoArbol;
+        this.cdr.detectChanges();
+        toast.error('Error', {
+          description: err.error?.error || 'No se pudo eliminar el atleta.',
+        });
+      },
+    });
+  }
+
+  private recalcularArbol(): void {
+    this.disciplinas.forEach((disc) => {
+      let totalAtletas = 0;
+      let totalPendientes = 0;
+      disc.municipios.forEach((mun: any) => {
+        mun.equipos.forEach((eq: any) => {
+          const pendientes = eq.atletas.filter(
+            (a: any) => a.estado === 'PENDIENTE',
+          ).length;
+          eq.atletasCount = eq.atletas.length;
+          eq.atletasPendientes = pendientes;
+          totalAtletas += eq.atletas.length;
+          totalPendientes += pendientes;
+        });
+      });
+      disc.totalAtletas = totalAtletas;
+      disc.totalPendientes = totalPendientes;
+    });
   }
 
   ejecutarDictamen(estado: 'APROBADO' | 'RECHAZADO'): void {
