@@ -9,7 +9,7 @@
     class="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-azul/5 blur-[140px] pointer-events-none">
   </div>
 
-  <div class="w-full max-w-[1250px] mx-auto flex-1">
+  <div class="w-full max-w-312.5 mx-auto flex-1">
 
     <!-- ENCABEZADO DE LA SECRETARÍA -->
     <header
@@ -24,7 +24,7 @@
       </div>
 
       <button (click)="logout()" type="button"
-        class="p-3 bg-white/[0.02] hover:bg-red-500/10 border border-white/10 text-gray-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2">
+        class="p-3 bg-white/2 hover:bg-red-500/10 border border-white/10 text-gray-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2">
         Cerrar Control <span class="material-symbols-outlined text-sm">logout</span>
       </button>
     </header>
@@ -37,13 +37,28 @@
           class="px-5 py-3 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
           <span class="material-symbols-outlined text-sm">analytics</span> Monitoreo de Roster
         </button>
-        <button (click)="cambiarSubPestana('cuentas')"
-          [class]="subPestanaActiva === 'cuentas' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
+        <button (click)="cambiarSubPestana('clubes')"
+          [class]="subPestanaActiva === 'clubes' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
           class="px-5 py-3 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
-          <span class="material-symbols-outlined text-sm">domain</span> Creación de Cuentas Municipales
+          <span class="material-symbols-outlined text-sm">add_business</span> Alta de Clubes
+        </button>
+        <button (click)="cambiarSubPestana('atletas')"
+          [class]="subPestanaActiva === 'atletas' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
+          class="px-5 py-3 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">person_add</span> Alta de Atletas
+        </button>
+        <button *ngIf="subPestanaActiva === 'rama'" (click)="cambiarSubPestana('rama')"
+          [class]="subPestanaActiva === 'rama' ? 'border-forja-naranja text-white font-black' : 'border-transparent text-gray-500 hover:text-gray-300 font-medium'"
+          class="px-5 py-3 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">groups</span> {{ disciplinaSeleccionada?.nombreDisciplina }}
+          · F / M
         </button>
       </div>
-      <div class="pb-2">
+      <div class="flex gap-2 pb-2">
+        <a routerLink="/dashboard-admin/disciplinas"
+          class="px-3 py-2 bg-forja-azul/20 hover:bg-forja-azul text-blue-400 hover:text-white border border-forja-azul/30 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-md">
+          <span class="material-symbols-outlined text-sm">groups</span> Disciplinas por Género
+        </a>
         <button (click)="descargarExcelGeneral()" type="button"
           class="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500 text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-md">
           <span class="material-symbols-outlined text-sm">download</span> Descargar Excel por Deporte
@@ -51,59 +66,94 @@
       </div>
     </div>
 
-    <!-- SECCIÓN: ALTA DE CUENTAS MUNICIPALES -->
-    <section *ngIf="subPestanaActiva === 'cuentas'"
-      class="max-w-[600px] mx-auto bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl space-y-4 animate-fade-in">
-      <div>
-        <h3 class="text-xs font-black text-forja-ocre uppercase tracking-wider">Alta Cuenta Institucional</h3>
-        <p class="text-[11px] text-gray-400">Genere los accesos para las Direcciones de Deportes Municipales.</p>
+    <!-- SECCIÓN: ALTA DE ATLETAS -->
+    <section *ngIf="subPestanaActiva === 'atletas'" class="max-w-170 mx-auto space-y-4 animate-fade-in">
+      <app-agregar-atleta-component (atletaRegistrado)="cargarMapaProvincial()"></app-agregar-atleta-component>
+    </section>
+
+    <!-- SECCIÓN: ALTA DE CLUBES / USUARIOS CON DISCIPLINA ASIGNADA -->
+    <section *ngIf="subPestanaActiva === 'clubes'"
+      class="max-w-170 mx-auto bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl space-y-4 animate-fade-in">
+      <div class="flex items-start gap-3">
+        <div
+          class="h-10 w-10 rounded-xl bg-linear-to-br from-forja-naranja to-orange-600 flex items-center justify-center text-white shadow-lg shadow-forja-naranja/20 shrink-0">
+          <span class="material-symbols-outlined text-lg">add_business</span>
+        </div>
+        <div>
+          <h3 class="text-xs font-black text-forja-ocre uppercase tracking-wider">Alta de Club / Delegación</h3>
+          <p class="text-[11px] text-gray-400">Cree una cuenta de club, asigne su disciplina deportiva y vincule a un
+            representante legal.</p>
+        </div>
       </div>
 
-      <form [formGroup]="municipioForm" (ngSubmit)="onCrearCuentaMunicipio()" class="space-y-4">
+      <form [formGroup]="clubForm" (ngSubmit)="onCrearClub()" class="space-y-4">
         <div class="flex flex-col gap-1.5">
-          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Jurisdicción Asignada</label>
-          <select formControlName="idLocalidad"
-            class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none cursor-pointer">
-            <option value="" disabled selected>Seleccionar Municipalidad/Comisión</option>
-            <option *ngFor="let loc of localidadesProvinciales" [value]="loc.id">{{ loc.nombre }}</option>
-          </select>
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nombre del Club / Equipo</label>
+          <input formControlName="nombreClub" type="text" placeholder="Ej. Club Atlético Gorriti"
+            class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col gap-1.5">
-            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nombre Responsable</label>
-            <input formControlName="nombreResponsante" type="text" placeholder="Ej. Juan"
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Disciplina Asignada</label>
+            <select formControlName="idDisciplina"
+              class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none cursor-pointer">
+              <option value="" disabled selected>Seleccionar Deporte</option>
+              <option *ngFor="let d of catalogoDisciplinas" [value]="d.id">
+                {{ d.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Jurisdicción</label>
+            <select formControlName="idLocalidad"
+              class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none cursor-pointer">
+              <option value="" disabled selected>Seleccionar Municipalidad/Comisión</option>
+              <option *ngFor="let loc of localidadesProvinciales" [value]="loc.id">{{ loc.nombre }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="border-t border-white/5 pt-3">
+          <p class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest mb-2">Representante Legal</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nombre</label>
+            <input formControlName="nombreRepresentante" type="text" placeholder="Ej. Juan"
               class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none" />
           </div>
           <div class="flex flex-col gap-1.5">
             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Apellido</label>
-            <input formControlName="apellidoResponsante" type="text" placeholder="Ej. Perez"
+            <input formControlName="apellido" type="text" placeholder="Ej. Pérez"
               class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none" />
           </div>
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">DNI Responsable</label>
-          <input formControlName="dni" type="text" placeholder="Sin puntos"
+          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">DNI del Representante</label>
+          <input formControlName="dniRepresentante" type="text" placeholder="Sin puntos"
             class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col gap-1.5">
             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nombre de Usuario</label>
-            <input formControlName="username" type="text" placeholder="Ej. palpaladeportes"
+            <input formControlName="username" type="text" placeholder="Ej. clubgorriti"
               class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Contraseña</label>
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Contraseña Inicial</label>
             <input formControlName="password" type="password" placeholder="••••••"
               class="w-full px-4 py-3 bg-forja-dark-input text-xs text-white border border-white/10 rounded-xl outline-none" />
           </div>
         </div>
 
-        <button [disabled]="municipioForm.invalid || procesandoMunicipioBtn" type="submit"
-          class="w-full py-4 bg-gradient-to-r from-forja-naranja to-orange-600 disabled:from-gray-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg">
-          {{ procesandoMunicipioBtn ? 'PROCESANDO...' : 'REGISTRAR CUENTA OFICIAL' }}
+        <button [disabled]="clubForm.invalid || procesandoClubBtn" type="submit"
+          class="w-full py-4 bg-linear-to-r from-forja-naranja to-orange-600 disabled:from-gray-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg">
+          {{ procesandoClubBtn ? 'CREANDO CLUB...' : 'REGISTRAR CLUB Y DISCIPLINA' }}
         </button>
       </form>
     </section>
@@ -124,9 +174,10 @@
           *ngFor="let disc of disciplinas">
 
           <!-- NIVEL 1: Disciplina Macro -->
-          <div (click)="toggleDisciplina(disc.nombreDisciplina)"
-            class="px-6 py-4.5 bg-white/[0.02] hover:bg-white/[0.04] flex justify-between items-center cursor-pointer select-none border-b border-white/5 transition-colors">
-            <div class="flex items-center gap-3">
+          <div
+            class="px-6 py-4.5 bg-white/2 hover:bg-white/4 flex justify-between items-center border-b border-white/5 transition-colors">
+            <div (click)="toggleDisciplina(disc.nombreDisciplina)"
+              class="flex items-center gap-3 cursor-pointer select-none flex-1">
               <span class="material-symbols-outlined text-gray-400 transition-transform duration-200"
                 [class.rotate-90]="disciplinasExpandidas[disc.nombreDisciplina]">keyboard_arrow_right</span>
               <span class="material-symbols-outlined text-forja-naranja text-xl">emoji_events</span>
@@ -140,6 +191,10 @@
               </span>
               <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{{ disc.totalAtletas }}
                 Totales</span>
+              <button (click)="verEquiposPorDisciplina(disc); $event.stopPropagation()" type="button"
+                class="px-3 py-1.5 bg-forja-azul/20 hover:bg-forja-azul text-blue-400 hover:text-white border border-forja-azul/30 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 shadow-md cursor-pointer">
+                <span class="material-symbols-outlined text-xs">groups</span> Ver F / M
+              </button>
             </div>
           </div>
 
@@ -149,7 +204,7 @@
               *ngFor="let mun of disc.municipios">
 
               <div (click)="toggleMunicipio(disc.nombreDisciplina + mun.nombreMunicipio)"
-                class="px-5 py-3 bg-white/[0.01] hover:bg-white/[0.03] flex justify-between items-center cursor-pointer select-none transition-colors">
+                class="px-5 py-3 bg-white/1 hover:bg-white/3 flex justify-between items-center cursor-pointer select-none transition-colors">
                 <div class="flex items-center gap-3">
                   <span class="material-symbols-outlined text-xs text-gray-600 transition-transform duration-200"
                     [class.rotate-90]="municipiosExpandidos[disc.nombreDisciplina + mun.nombreMunicipio]">keyboard_arrow_right</span>
@@ -167,7 +222,7 @@
 
                   <!-- Fila Control Superior de la Entidad -->
                   <div
-                    class="flex justify-between items-center bg-white/[0.01] px-4 py-3 rounded-xl border border-white/5 shadow-inner">
+                    class="flex justify-between items-center bg-white/1 px-4 py-3 rounded-xl border border-white/5 shadow-inner">
                     <span
                       class="text-[11px] font-black text-forja-naranja uppercase tracking-wider flex items-center gap-1.5">
                       <span class="material-symbols-outlined text-sm">shield</span> Entidad: {{ eq.nombreEquipo }}
@@ -205,14 +260,14 @@
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-white/5 bg-forja-dark-card/10">
-                        <tr class="hover:bg-white/[0.01] transition-colors" *ngFor="let atleta of eq.atletas">
+                        <tr class="hover:bg-white/1 transition-colors" *ngFor="let atleta of eq.atletas">
                           <td class="p-4 font-bold text-white uppercase tracking-wide">
                             {{ atleta.apellido }}, {{ atleta.nombre }}
                           </td>
                           <td class="p-4 font-mono text-gray-400 text-[11px]">DNI {{ atleta.dni }}</td>
 
                           <!-- 🚀 CELDA CORREGIDA: Renderizado dinámico de prueba principal y pruebas múltiples relacionales -->
-                          <td class="p-4 space-y-1 max-w-[220px]">
+                          <td class="p-4 space-y-1 max-w-55">
                             <div class="font-bold text-forja-ocre tracking-wide uppercase text-[11px] truncate">
                               {{ atleta.prueba?.nombrePrueba || 'Prueba General' }}
                             </div>
@@ -253,14 +308,193 @@
         </div>
       </div>
     </section>
+
+    <!-- SECCIÓN: EQUIPOS POR DISCIPLINA SEPARADOS POR RAMA (F / M) -->
+    <section *ngIf="subPestanaActiva === 'rama'" class="space-y-4 animate-fade-in">
+
+      <div
+        class="bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-11 w-11 rounded-xl bg-linear-to-br from-forja-naranja to-orange-600 flex items-center justify-center text-white shadow-lg shadow-forja-naranja/20">
+            <span class="material-symbols-outlined text-xl">groups</span>
+          </div>
+          <div>
+            <span class="text-[9px] font-black text-forja-ocre uppercase tracking-widest">Desglose por Rama</span>
+            <h2 class="text-base font-black text-white tracking-wide uppercase">
+              {{ disciplinaSeleccionada?.nombreDisciplina }}</h2>
+            <p class="text-[11px] text-gray-400">Equipos femeninos y masculinos registrados en esta disciplina.</p>
+          </div>
+        </div>
+        <button (click)="volverAlArbol()" type="button"
+          class="px-4 py-2 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-forja-naranja text-gray-300 hover:text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">arrow_back</span> Volver al Árbol
+        </button>
+      </div>
+
+      <div class="flex flex-col items-center justify-center py-20 space-y-3" *ngIf="cargandoEquiposPorRama">
+        <div class="h-10 w-10 border-4 border-forja-naranja border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500">Sincronizando equipos por rama...</p>
+      </div>
+
+      <div *ngIf="!cargandoEquiposPorRama" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        <!-- BLOQUE FEMENINO -->
+        <div
+          class="bg-forja-dark-card/40 backdrop-blur-md border border-pink-500/20 rounded-2xl p-5 shadow-xl space-y-4">
+          <header class="flex justify-between items-center border-b border-pink-500/10 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-pink-400">female</span>
+              <h3 class="text-xs font-black text-pink-300 uppercase tracking-widest">Rama Femenina</h3>
+            </div>
+            <span
+              class="text-[10px] bg-pink-500/10 border border-pink-500/20 text-pink-300 px-2.5 py-0.5 rounded-full font-black tracking-wider uppercase">
+              {{ equiposFemeninos.length }} Club/es
+            </span>
+          </header>
+
+          <div *ngIf="equiposFemeninos.length === 0"
+            class="py-10 text-center text-[11px] text-gray-500 border border-dashed border-white/5 rounded-xl">
+            No hay equipos femeninos inscriptos en esta disciplina.
+          </div>
+
+          <div class="space-y-3">
+            <div *ngFor="let eq of equiposFemeninos"
+              class="p-4 rounded-xl bg-white/2 border border-white/5 hover:border-pink-500/40 transition-all shadow-inner">
+              <div class="flex justify-between items-start gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-pink-400 text-base">shield</span>
+                    <h4 class="text-xs font-black text-white uppercase tracking-wide truncate">{{ eq.nombreEquipo }}
+                    </h4>
+                  </div>
+                  <p class="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wider truncate">
+                    <span class="material-symbols-outlined text-[12px] align-middle">location_city</span>
+                    {{ eq.localidadNombre || eq.municipio }}
+                  </p>
+                  <p class="text-[10px] text-gray-500 mt-0.5 truncate">
+                    Resp.: <span class="text-gray-300 font-bold">{{ eq.representante }}</span>
+                  </p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Atletas F</p>
+                  <p class="text-base font-black text-pink-300 leading-tight">{{ eq.atletasFemeninos }}</p>
+                </div>
+              </div>
+              <div class="mt-3 flex items-center gap-2 text-[10px] text-gray-500">
+                <span class="px-2 py-0.5 bg-white/[0.02] border border-white/5 rounded font-bold uppercase">
+                  Total: {{ eq.totalAtletas }}
+                </span>
+                <span *ngIf="eq.atletasMasculinos > 0"
+                  class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-300 rounded font-bold uppercase tracking-wider">
+                  +{{ eq.atletasMasculinos }} M
+                </span>
+                <span *ngIf="eq.atletasMixtos > 0"
+                  class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded font-bold uppercase tracking-wider">
+                  +{{ eq.atletasMixtos }} Mix
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOQUE MASCULINO -->
+        <div
+          class="bg-forja-dark-card/40 backdrop-blur-md border border-blue-500/20 rounded-2xl p-5 shadow-xl space-y-4">
+          <header class="flex justify-between items-center border-b border-blue-500/10 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue-400">male</span>
+              <h3 class="text-xs font-black text-blue-300 uppercase tracking-widest">Rama Masculina</h3>
+            </div>
+            <span
+              class="text-[10px] bg-blue-500/10 border border-blue-500/20 text-blue-300 px-2.5 py-0.5 rounded-full font-black tracking-wider uppercase">
+              {{ equiposMasculinos.length }} Club/es
+            </span>
+          </header>
+
+          <div *ngIf="equiposMasculinos.length === 0"
+            class="py-10 text-center text-[11px] text-gray-500 border border-dashed border-white/5 rounded-xl">
+            No hay equipos masculinos inscriptos en esta disciplina.
+          </div>
+
+          <div class="space-y-3">
+            <div *ngFor="let eq of equiposMasculinos"
+              class="p-4 rounded-xl bg-white/2 border border-white/5 hover:border-blue-500/40 transition-all shadow-inner">
+              <div class="flex justify-between items-start gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-400 text-base">shield</span>
+                    <h4 class="text-xs font-black text-white uppercase tracking-wide truncate">{{ eq.nombreEquipo }}
+                    </h4>
+                  </div>
+                  <p class="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wider truncate">
+                    <span class="material-symbols-outlined text-[12px] align-middle">location_city</span>
+                    {{ eq.localidadNombre || eq.municipio }}
+                  </p>
+                  <p class="text-[10px] text-gray-500 mt-0.5 truncate">
+                    Resp.: <span class="text-gray-300 font-bold">{{ eq.representante }}</span>
+                  </p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Atletas M</p>
+                  <p class="text-base font-black text-blue-300 leading-tight">{{ eq.atletasMasculinos }}</p>
+                </div>
+              </div>
+              <div class="mt-3 flex items-center gap-2 text-[10px] text-gray-500">
+                <span class="px-2 py-0.5 bg-white/[0.02] border border-white/5 rounded font-bold uppercase">
+                  Total: {{ eq.totalAtletas }}
+                </span>
+                <span *ngIf="eq.atletasFemeninos > 0"
+                  class="px-2 py-0.5 bg-pink-500/10 border border-pink-500/20 text-pink-300 rounded font-bold uppercase tracking-wider">
+                  +{{ eq.atletasFemeninos }} F
+                </span>
+                <span *ngIf="eq.atletasMixtos > 0"
+                  class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded font-bold uppercase tracking-wider">
+                  +{{ eq.atletasMixtos }} Mix
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BLOQUE MIXTO (cuando aplica) -->
+      <div *ngIf="!cargandoEquiposPorRama && equiposMixtos.length > 0"
+        class="bg-forja-dark-card/40 backdrop-blur-md border border-amber-500/20 rounded-2xl p-5 shadow-xl space-y-4">
+        <header class="flex justify-between items-center border-b border-amber-500/10 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-400">transgender</span>
+            <h3 class="text-xs font-black text-amber-300 uppercase tracking-widest">Rama Mixta / Combinada</h3>
+          </div>
+          <span
+            class="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full font-black tracking-wider uppercase">
+            {{ equiposMixtos.length }} Club/es
+          </span>
+        </header>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div *ngFor="let eq of equiposMixtos"
+            class="p-3 rounded-xl bg-white/2 border border-white/5 hover:border-amber-500/40 transition-all shadow-inner">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-400 text-base">shield</span>
+              <h4 class="text-xs font-black text-white uppercase tracking-wide truncate">{{ eq.nombreEquipo }}</h4>
+            </div>
+            <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider truncate">
+              {{ eq.localidadNombre || eq.municipio }} · {{ eq.totalAtletas }} atletas
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
   </div>
 
   <!-- MODAL: EVALUACIÓN DE DOCUMENTACIÓN DEL ATLETA -->
   <div
-    class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in"
+    class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-100 flex items-center justify-center p-4 animate-fade-in"
     *ngIf="mostrarModalAuditoria">
     <div
-      class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-[480px] p-6 space-y-6 shadow-2xl overflow-hidden relative">
+      class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-120 p-6 space-y-6 shadow-2xl overflow-hidden relative">
       <header class="flex justify-between items-start border-b border-white/5 pb-3">
         <div>
           <span class="text-[9px] font-black text-forja-naranja uppercase tracking-widest">Dictamen Ministerial
@@ -324,7 +558,8 @@
 
       <div class="space-y-1.5">
         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-          Motivo de Rechazo <span class="text-xs font-normal text-gray-500 lowercase">(Solo si dictamina desfavorable)</span>
+          Motivo de Rechazo <span class="text-xs font-normal text-gray-500 lowercase">(Solo si dictamina
+            desfavorable)</span>
         </label>
         <textarea [(ngModel)]="motivoRechazoInput" rows="2"
           class="w-full px-4 py-2 bg-forja-dark-input border border-white/10 focus:border-red-500/50 rounded-xl text-xs text-white outline-none resize-none placeholder-gray-600"
@@ -335,7 +570,7 @@
         <button [disabled]="procesandoDictamen" (click)="ejecutarDictamen('RECHAZADO')" type="button"
           class="flex-1 py-3 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">RECHAZAR</button>
         <button [disabled]="procesandoDictamen" (click)="ejecutarDictamen('APROBADO')" type="button"
-          class="flex-1 py-3 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider shadow-lg transition-all cursor-pointer shadow-green-950/20">HABILITAR
+          class="flex-1 py-3 bg-linear-to-r from-green-600 to-emerald-700 hover:from-green-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider shadow-lg transition-all cursor-pointer shadow-green-950/20">HABILITAR
           ATLETA</button>
       </footer>
     </div>
@@ -343,17 +578,17 @@
 
   <!-- MODAL: VERIFICACIÓN DE FIRMA DEL DELEGADO -->
   <div
-    class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in"
+    class="fixed inset-0 bg-forja-dark-bg/85 backdrop-blur-md z-100 flex items-center justify-center p-4 animate-fade-in"
     *ngIf="mostrarModalDelegado">
     <div
-      class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-[480px] p-6 space-y-5 shadow-2xl relative">
+      class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-120 p-6 space-y-5 shadow-2xl relative">
       <header class="flex justify-between items-start border-b border-white/5 pb-3">
         <div>
           <span class="text-[9px] font-black text-forja-naranja uppercase tracking-widest">Validación de Firma
             Institucional</span>
           <h3 class="text-md font-black text-white uppercase tracking-wide mt-0.5">Club: {{
             equipoSeleccionado?.nombreEquipo }}</h3>
-          <p class="text-[11px] text-gray-400 mt-0.5 font-medium uppercase text-forja-ocre">Representante: {{
+          <p class="text-[11px] text-forja-ocre mt-0.5 font-medium uppercase">Representante: {{
             equipoSeleccionado?.usuarioResponsable?.nombre }} {{ equipoSeleccionado?.usuarioResponsable?.apellido }}</p>
           <p class="text-[10px] font-mono text-gray-500">DNI Declarado: {{ equipoSeleccionado?.usuarioResponsable?.dni
             }}</p>
@@ -368,7 +603,7 @@
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Documentación Cargada en Sistema</p>
 
         <div *ngIf="!equipoSeleccionado?.usuarioResponsable"
-          class="py-6 flex flex-col items-center justify-center gap-2 border border-white/5 bg-white/[0.01] rounded-xl">
+          class="py-6 flex flex-col items-center justify-center gap-2 border border-white/5 bg-white/1 rounded-xl">
           <div class="h-5 w-5 border-2 border-forja-naranja border-t-transparent rounded-full animate-spin"></div>
           <span class="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Recuperando credenciales en
             servidor...</span>
@@ -414,10 +649,10 @@
 
       <footer class="flex items-center gap-3 border-t border-white/5 pt-4">
         <button (click)="cerrarAuditoriaDelegado()" type="button"
-          class="flex-1 py-3 bg-white/[0.02] border border-white/10 hover:bg-white/[0.05] text-gray-400 font-bold text-xs rounded-xl uppercase tracking-wider transition-all">Conservar
+          class="flex-1 py-3 bg-white/2 border border-white/10 hover:bg-white/5 text-gray-400 font-bold text-xs rounded-xl uppercase tracking-wider transition-all">Conservar
           Entidad</button>
         <button (click)="eliminarDesdeModalDelegado()" type="button"
-          class="flex-1 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 text-white font-black text-xs rounded-xl uppercase tracking-wider shadow-lg transition-all">ELIMINAR
+          class="flex-1 py-3 bg-linear-to-r from-red-600 to-red-700 hover:from-red-500 text-white font-black text-xs rounded-xl uppercase tracking-wider shadow-lg transition-all">ELIMINAR
           EQUIPO</button>
       </footer>
     </div>
@@ -432,10 +667,10 @@
 </div>
 
 <!-- MODAL ESTÉTICO: DIALOGO CONFIRMACIÓN ELIMINACIÓN DELEGACIÓN -->
-<div class="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in"
+<div class="fixed inset-0 bg-black/80 backdrop-blur-md z-200 flex items-center justify-center p-4 animate-fade-in"
   *ngIf="mostrarModalConfirmarEliminar">
   <div
-    class="bg-gradient-to-b from-forja-dark-card to-zinc-950 border border-red-500/20 rounded-2xl w-full max-w-[440px] p-6 space-y-5 shadow-2xl relative shadow-red-950/20">
+    class="bg-linear-to-b from-forja-dark-card to-zinc-950 border border-red-500/20 rounded-2xl w-full max-w-110 p-6 space-y-5 shadow-2xl relative shadow-red-950/20">
 
     <div
       class="mx-auto w-12 h-12 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center shadow-lg shadow-red-500/5">
@@ -457,11 +692,11 @@
 
     <footer class="flex items-center gap-3 border-t border-white/5 pt-4">
       <button (click)="cerrarModalConfirmar()" [disabled]="procesandoEliminacion" type="button"
-        class="flex-1 py-3 bg-white/[0.02] border border-white/10 hover:bg-white/[0.05] text-gray-400 hover:text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+        class="flex-1 py-3 bg-white/2 border border-white/10 hover:bg-white/5 text-gray-400 hover:text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
         Abortar Acción
       </button>
       <button (click)="confirmarEliminacionEfectiva()" [disabled]="procesandoEliminacion" type="button"
-        class="flex-1 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 text-white font-black text-xs rounded-xl uppercase tracking-wider shadow-lg shadow-red-950/50 transition-all cursor-pointer flex items-center justify-center gap-2">
+        class="flex-1 py-3 bg-linear-to-r from-red-600 to-red-700 hover:from-red-500 text-white font-black text-xs rounded-xl uppercase tracking-wider shadow-lg shadow-red-950/50 transition-all cursor-pointer flex items-center justify-center gap-2">
         <span *ngIf="!procesandoEliminacion">EJECUTAR BAJA</span>
         <span *ngIf="procesandoEliminacion" class="animate-pulse">PURGANDO...</span>
       </button>

@@ -83,12 +83,10 @@ export class LoginComponent implements OnInit {
       next: (res: any) => {
         this.cargando = false;
 
-        // 🚀 1. SOLUCIÓN CRÍTICA: Persistir el token de seguridad JWT
-        if (res.token) {
-          localStorage.setItem('token', res.token);
-        }
+        // El token y el perfil ya fueron persistidos por AuthService.login
+        // bajo la clave forja_token (única fuente de verdad).
 
-        // 🚀 2. SOLUCIÓN: Persistir los datos del perfil para el componente de cambio de clave
+        // 🚀 2. SOLUCIÓN: Persistir los claims del perfil para el componente de cambio de clave
         if (res.usuario) {
           localStorage.setItem('forja_user', JSON.stringify(res.usuario));
 

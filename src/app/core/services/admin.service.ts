@@ -1,6 +1,10 @@
 // src/app/core/services/admin.service.ts
+//
+// Service único para todas las llamadas al panel /api/admin.
+// El JWT lo inyecta automáticamente el tokenInterceptor configurado en
+// app.config.ts, así que acá NO se arman headers a mano.
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -13,75 +17,78 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  // 🚀 INTERCEPTOR MANUAL: Extrae el JWT guardado en el login para abrir los endpoints de administración
-  private obtenerHeaders(): HttpHeaders {
-    let token = localStorage.getItem('token') || localStorage.getItem('jwt');
-
-    if (!token) {
-      const forjaUser = localStorage.getItem('forja_user');
-      if (forjaUser) {
-        try {
-          const parsed = JSON.parse(forjaUser);
-          token = parsed.token || parsed.jwt;
-        } catch (e) {
-          console.error('Error al extraer token desde forja_user en AdminService', e);
-        }
-      }
-    }
-
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-  }
-
-  // 🚀 NUEVA PETICIÓN: Trae la documentación y datos del DNI del representante de forma aislada
-  obtenerDelegadoPorEquipo(idEquipo: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/equipo-delegado/${idEquipo}`, {
-      headers: this.obtenerHeaders(),
-    });
-  }
-
+  // =========================================================================
+  // Árbol ministerial y delegaciones
+  // =========================================================================
   obtenerArbolDelegaciones(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/arbol-delegaciones`, {
-      headers: this.obtenerHeaders(),
-    });
+    return this.http.get<any[]>(`${this.apiUrl}/arbol-delegaciones`);
   }
 
+  obtenerDelegadoPorEquipo(idEquipo: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/equipo-delegado/${idEquipo}`);
+  }
+
+  // =========================================================================
+  // Dictámenes y baja de equipos
+  // =========================================================================
   dictaminarAtleta(idAtleta: string, payload: any): Observable<any> {
-    return this.http.put(
-      `${this.apiUrl}/dictaminar/${idAtleta}`,
-      payload,
-      { headers: this.obtenerHeaders() },
-    );
+    return this.http.put(`${this.apiUrl}/dictaminar/${idAtleta}`, payload);
   }
 
   eliminarEquipo(idEquipo: string): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/eliminar-equipo/${idEquipo}`, {
-      headers: this.obtenerHeaders(),
-    });
+    return this.http.delete<any>(`${this.apiUrl}/eliminar-equipo/${idEquipo}`);
+  }
+
+  // =========================================================================
+  // Cuentas municipales (lista blanca + token)
+  // =========================================================================
+  obtenerLocalidadesYTokens(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/localidades-tokens`);
   }
 
   crearUsuarioMunicipio(payload: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/crear-municipio-usuario`, payload, {
-      headers: this.obtenerHeaders(),
-    });
-  }
-
-  // =========================================================================
-  // MÉTODOS DE RESERVA / LEGADO (Saneados con Headers por si los usás en otro módulo)
-  // =========================================================================
-  obtenerLocalidadesYTokens(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/localidades-tokens`, {
-      headers: this.obtenerHeaders(),
-    });
+    return this.http.post<any>(`${this.apiUrl}/crear-municipio-usuario`, payload);
   }
 
   generarTokenMunicipio(idLocalidad: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/generar-token`, { idLocalidad });
+  }
+
+  // =========================================================================
+  // Alta de clubes (admin crea club + usuario + disciplina en una sola tx)
+  // =========================================================================
+  crearClub(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/crear-club`, payload);
+  }
+
+  // =========================================================================
+  // Disciplinas y catálogo
+  // =========================================================================
+  obtenerCatalogoDisciplinas(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/disciplinas`);
+  }
+
+  obtenerEquiposPorRama(idDisciplina: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/equipos-por-rama/${idDisciplina}`);
+  }
+
+  // =========================================================================
+  // 🚀 NUEVO: Alta de atletas por parte del ADMIN (flujo pedido)
+  // =========================================================================
+  listarEquiposDisponibles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/equipos-disponibles`);
+  }
+
+  obtenerPruebasPorDisciplina(idDisciplina: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/pruebas-por-disciplina/${idDisciplina}`,
+    );
+  }
+
+  agregarAtletaAEquipo(idEquipo: string, formData: FormData): Observable<any> {
     return this.http.post<any>(
-      `${this.apiUrl}/generar-token`,
-      { idLocalidad },
-      { headers: this.obtenerHeaders() },
+      `${this.apiUrl}/agregar-atleta/${idEquipo}`,
+      formData,
     );
   }
 }

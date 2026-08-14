@@ -58,7 +58,8 @@ export class CambiarClaveObligatoriaComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token =
+      localStorage.getItem('forja_token') || localStorage.getItem('token');
     if (!token) {
       toast.error('Sesión expirada', { description: 'Por favor, vuelva a loguearse.' });
       this.router.navigate(['/login']);

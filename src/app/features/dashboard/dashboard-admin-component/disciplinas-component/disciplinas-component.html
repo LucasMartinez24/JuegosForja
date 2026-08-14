@@ -1,0 +1,75 @@
+<div
+  class="min-h-screen bg-forja-dark-bg font-epilogue text-gray-200 p-4 md:p-8 relative overflow-hidden flex flex-col">
+
+  <!-- Fondos difuminados institucionales -->
+  <div
+    class="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-naranja/5 blur-[140px] pointer-events-none">
+  </div>
+  <div
+    class="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-azul/5 blur-[140px] pointer-events-none">
+  </div>
+
+  <div class="w-full max-w-312.5 mx-auto flex-1 space-y-6">
+
+    <!-- ENCABEZADO -->
+    <header
+      class="bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-row justify-between items-center gap-4 shadow-xl">
+      <div class="flex items-center gap-4">
+        <img src="/img/logo.png" alt="Logo" class="h-20 w-auto object-contain drop-shadow-md" />
+        <div>
+          <span class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">Auditoría por Rama</span>
+          <h1 class="text-xl font-black text-white tracking-wide uppercase">Disciplinas Provinciales</h1>
+          <p class="text-[11px] text-gray-400">Listado completo separado por género para validación oficial.</p>
+        </div>
+      </div>
+
+      <button (click)="volver()" type="button"
+        class="px-4 py-2 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-forja-naranja text-gray-300 hover:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">arrow_back</span> Volver al Panel
+      </button>
+    </header>
+
+    <!-- ESTADO DE CARGA -->
+    <div *ngIf="cargando" class="flex flex-col items-center justify-center py-24 space-y-4">
+      <div class="h-10 w-10 border-4 border-forja-naranja border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-xs uppercase tracking-widest font-bold text-gray-500">Sincronizando catálogo de disciplinas...</p>
+    </div>
+
+    <!-- CATÁLOGO DE DISCIPLINAS (cards seleccionables) -->
+    <section *ngIf="!cargando" class="space-y-4">
+      <div class="flex items-center gap-2 text-[11px] text-gray-500 uppercase tracking-wider">
+        <span class="material-symbols-outlined text-sm">filter_list</span>
+        {{ disciplinas.length }} disciplina(s) registrada(s)
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <button *ngFor="let d of disciplinas" (click)="abrirDisciplina(d)" type="button"
+          class="text-left bg-forja-dark-card/40 backdrop-blur-md border border-white/5 hover:border-forja-naranja/60 rounded-2xl p-5 shadow-lg transition-all hover:scale-[1.02] cursor-pointer group">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <span class="text-[9px] font-black text-forja-ocre uppercase tracking-widest">
+                {{ d.tipo === 'ADAPTADO' ? 'Deporte Adaptado' : 'Convencional' }}
+              </span>
+              <h3 class="text-sm font-black text-white uppercase tracking-wide mt-1 truncate">
+                {{ d.nombre }}
+              </h3>
+            </div>
+            <span class="material-symbols-outlined text-forja-naranja text-2xl">emoji_events</span>
+          </div>
+          <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] uppercase tracking-wider text-gray-400">
+            <span>Ver equipos</span>
+            <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
+              arrow_forward
+            </span>
+          </div>
+        </button>
+
+        <div *ngIf="disciplinas.length === 0"
+          class="col-span-full py-10 text-center text-[11px] text-gray-500 border border-dashed border-white/5 rounded-xl">
+          Aún no hay disciplinas cargadas en el sistema.
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

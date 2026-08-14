@@ -2,7 +2,8 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('token');
+  const token =
+    localStorage.getItem('forja_token') || localStorage.getItem('token');
 
   // Si tenemos un token guardado del login, lo clonamos en los headers de la petición
   if (token) {

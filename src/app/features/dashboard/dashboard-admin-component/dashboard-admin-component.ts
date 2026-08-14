@@ -1,18 +1,19 @@
 // src/app/modules/admin/dashboard-admin/dashboard-admin.component.ts
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { toast } from 'ngx-sonner';
 import { AdminService } from '../../../core/services/admin.service';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DelegacionService } from '../../../core/services/delegacion.service';
 import { environment } from '../../../../environments/environment';
+import { AgregarAtletaComponent } from './agregar-atleta-component/agregar-atleta-component';
 
 @Component({
   selector: 'app-dashboard-admin-component',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, AgregarAtletaComponent],
   templateUrl: './dashboard-admin-component.html',
   styleUrl: './dashboard-admin-component.css',
 })
@@ -21,10 +22,18 @@ export class DashboardAdminComponent implements OnInit {
   cargando = true;
   procesandoDictamen = false;
 
-  subPestanaActiva: 'auditoria' | 'cuentas' = 'auditoria';
-  municipioForm!: FormGroup;
-  procesandoMunicipioBtn = false;
+  subPestanaActiva: 'auditoria' | 'clubes' | 'atletas' | 'rama' = 'auditoria';
   localidadesProvinciales: any[] = [];
+
+  // === Alta de Clubes (modo admin) ===
+  clubForm!: FormGroup;
+  procesandoClubBtn = false;
+  catalogoDisciplinas: any[] = [];
+
+  // === Vista de Equipos por Rama (pestaña dedicada por disciplina) ===
+  disciplinaSeleccionada: any = null;
+  cargandoEquiposPorRama = false;
+  equiposPorDisciplina: any[] = [];
 
   disciplinasExpandidas: { [key: string]: boolean } = {};
   municipiosExpandidos: { [key: string]: boolean } = {};
@@ -54,17 +63,20 @@ export class DashboardAdminComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.municipioForm = this.fb.group({
+    this.clubForm = this.fb.group({
+      nombreClub: ['', [Validators.required, Validators.minLength(3)]],
+      idDisciplina: ['', Validators.required],
       idLocalidad: ['', Validators.required],
-      nombreResponsante: ['', [Validators.required, Validators.minLength(3)]],
-      apellidoResponsante: ['', [Validators.required, Validators.minLength(3)]],
-      dni: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}$')]],
+      nombreRepresentante: ['', [Validators.required, Validators.minLength(3)]],
+      apellido: ['', [Validators.required, Validators.minLength(3)]],
+      dniRepresentante: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}$')]],
       username: ['', [Validators.required, Validators.minLength(4)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
     this.cargarMapaProvincial();
     this.cargarLocalidadesPublicas();
+    this.cargarCatalogoDisciplinas();
   }
 
   cargarLocalidadesPublicas(): void {
@@ -74,28 +86,96 @@ export class DashboardAdminComponent implements OnInit {
     });
   }
 
-  cambiarSubPestana(pestana: 'auditoria' | 'cuentas'): void {
+  cargarCatalogoDisciplinas(): void {
+    this.adminService.obtenerCatalogoDisciplinas().subscribe({
+      next: (res) => (this.catalogoDisciplinas = res),
+      error: (err) => console.error('Error al traer catálogo de disciplinas:', err),
+    });
+  }
+
+  cambiarSubPestana(pestana: 'auditoria' | 'clubes' | 'atletas' | 'rama'): void {
     this.subPestanaActiva = pestana;
+    if (pestana !== 'rama') {
+      this.disciplinaSeleccionada = null;
+      this.equiposPorDisciplina = [];
+    }
     this.cdr.detectChanges();
   }
 
-  onCrearCuentaMunicipio(): void {
-    if (this.municipioForm.invalid) {
-      this.municipioForm.markAllAsTouched();
+  onCrearClub(): void {
+    if (this.clubForm.invalid) {
+      this.clubForm.markAllAsTouched();
       return;
     }
-    this.procesandoMunicipioBtn = true;
-    this.adminService.crearUsuarioMunicipio(this.municipioForm.value).subscribe({
+    this.procesandoClubBtn = true;
+    this.adminService.crearClub(this.clubForm.value).subscribe({
       next: (res) => {
-        toast.success('Cuenta Creada', { description: res.mensaje });
-        this.municipioForm.reset({ idLocalidad: '' });
-        this.procesandoMunicipioBtn = false;
+        toast.success('Club Registrado', { description: res.mensaje });
+        this.clubForm.reset({
+          idLocalidad: '',
+          idDisciplina: '',
+          nombreClub: '',
+          nombreRepresentante: '',
+          apellido: '',
+          dniRepresentante: '',
+          username: '',
+          password: '',
+        });
+        this.procesandoClubBtn = false;
+        this.cargarMapaProvincial();
       },
       error: (err) => {
-        this.procesandoMunicipioBtn = false;
-        toast.error('No se pudo procesar', { description: err.error?.error });
+        this.procesandoClubBtn = false;
+        toast.error('No se pudo registrar el club', {
+          description: err.error?.error,
+        });
       },
     });
+  }
+
+  verEquiposPorDisciplina(disciplina: any): void {
+    this.disciplinaSeleccionada = disciplina;
+    this.equiposPorDisciplina = [];
+    this.cargandoEquiposPorRama = true;
+    this.subPestanaActiva = 'rama';
+    this.cdr.detectChanges();
+
+    this.adminService.obtenerEquiposPorRama(disciplina.idDisciplina).subscribe({
+      next: (res) => {
+        this.equiposPorDisciplina = res.equipos || [];
+        this.cargandoEquiposPorRama = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.cargandoEquiposPorRama = false;
+        toast.error('No se pudieron cargar los equipos', {
+          description: err.error?.error,
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  volverAlArbol(): void {
+    this.cambiarSubPestana('auditoria');
+  }
+
+  get equiposFemeninos(): any[] {
+    return this.equiposPorDisciplina.filter(
+      (e) => e.ramaPrincipal === 'FEMENINO',
+    );
+  }
+
+  get equiposMasculinos(): any[] {
+    return this.equiposPorDisciplina.filter(
+      (e) => e.ramaPrincipal === 'MASCULINO',
+    );
+  }
+
+  get equiposMixtos(): any[] {
+    return this.equiposPorDisciplina.filter(
+      (e) => e.ramaPrincipal === 'MIXTO',
+    );
   }
 
   cargarMapaProvincial(): void {

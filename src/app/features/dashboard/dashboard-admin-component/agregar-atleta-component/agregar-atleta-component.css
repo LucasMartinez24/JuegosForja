@@ -1,0 +1,4 @@
+/* Estilos del componente AgregarAtleta. Reutiliza utilidades de Tailwind v4. */
+:host {
+  display: block;
+}

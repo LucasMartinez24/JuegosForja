@@ -1,0 +1,7 @@
+/* Estilos específicos del componente Disciplinas.
+   Mantengo las mismas clases utilitarias (Tailwind v4) que el resto del dashboard
+   para no introducir dependencias nuevas. */
+:host {
+  display: block;
+  width: 100%;
+}

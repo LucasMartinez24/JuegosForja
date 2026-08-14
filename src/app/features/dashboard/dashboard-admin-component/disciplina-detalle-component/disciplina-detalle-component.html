@@ -1,0 +1,379 @@
+<div
+  class="min-h-screen bg-forja-dark-bg font-epilogue text-gray-200 p-4 md:p-8 relative overflow-hidden flex flex-col">
+
+  <!-- Fondos difuminados institucionales -->
+  <div
+    class="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-naranja/5 blur-[140px] pointer-events-none">
+  </div>
+  <div
+    class="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-forja-azul/5 blur-[140px] pointer-events-none">
+  </div>
+
+  <div class="w-full max-w-312.5 mx-auto flex-1 space-y-6">
+
+    <!-- ENCABEZADO -->
+    <header
+      class="bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-row justify-between items-center gap-4 shadow-xl">
+      <div class="flex items-center gap-4">
+        <img src="/img/logo.png" alt="Logo" class="h-20 w-auto object-contain drop-shadow-md" />
+        <div>
+          <span class="text-[10px] font-bold text-forja-ocre uppercase tracking-widest">Auditoría por Rama</span>
+          <h1 class="text-xl font-black text-white tracking-wide uppercase">{{ disciplinaSeleccionada?.nombre }}</h1>
+          <p class="text-[11px] text-gray-400">{{ disciplinaSeleccionada?.tipo === 'ADAPTADO' ? 'Deporte Adaptado' : 'Convencional' }} ·
+            Equipos pertenecientes a la disciplina.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button (click)="volverAlCatalogo()" type="button"
+          class="px-4 py-2 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-forja-naranja text-gray-300 hover:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">arrow_back</span> Catálogo
+        </button>
+        <button (click)="volver()" type="button"
+          class="px-4 py-2 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-forja-naranja text-gray-300 hover:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">grid_view</span> Panel
+        </button>
+      </div>
+    </header>
+
+    <!-- ESTADO DE CARGA -->
+    <div *ngIf="cargando" class="flex flex-col items-center justify-center py-24 space-y-4">
+      <div class="h-10 w-10 border-4 border-forja-naranja border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-xs uppercase tracking-widest font-bold text-gray-500">Sincronizando equipos de la disciplina...</p>
+    </div>
+
+    <ng-container *ngIf="!cargando">
+
+      <div *ngIf="equipos.length === 0"
+        class="py-10 text-center text-[11px] text-gray-500 border border-dashed border-white/5 rounded-xl">
+        Aún no hay equipos cargados en esta disciplina.
+      </div>
+
+      <!-- SELECTOR DE RAMA -->
+      <div *ngIf="equipos.length > 0"
+        class="bg-forja-dark-card/40 backdrop-blur-md border border-white/5 rounded-2xl p-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <button *ngFor="let rama of ramasDisponibles" (click)="seleccionarRama(rama.key)" type="button"
+          [class]="rama.key === ramaActiva ? 'bg-forja-naranja text-white border-forja-naranja shadow-lg shadow-forja-naranja/25' : 'bg-white/2 text-gray-400 hover:text-white border-white/10 hover:border-forja-naranja/40'"
+          class="px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-base">{{ rama.icono }}</span>
+          {{ rama.titulo }}
+          <span
+            [class]="rama.key === ramaActiva ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-400'"
+            class="text-[9px] px-2 py-0.5 rounded-full font-black tracking-wider">
+            {{ rama.cantidad }} Club/es
+          </span>
+        </button>
+      </div>
+
+      <!-- BLOQUE DE LA RAMA ACTIVA -->
+      <div *ngIf="equipos.length > 0" class="space-y-4 animate-fade-in">
+        <div
+          [class]="bloqueActivo.key === 'FEMENINO' ? 'border-pink-500/20' : bloqueActivo.key === 'MASCULINO' ? 'border-blue-500/20' : 'border-amber-500/20'"
+          class="bg-forja-dark-card/40 backdrop-blur-md border rounded-2xl p-5 shadow-xl space-y-4">
+          <header class="flex justify-between items-center border-b border-white/5 pb-3">
+            <div class="flex items-center gap-2">
+              <span *ngIf="bloqueActivo.key === 'FEMENINO'" class="material-symbols-outlined text-pink-400">female</span>
+              <span *ngIf="bloqueActivo.key === 'MASCULINO'" class="material-symbols-outlined text-blue-400">male</span>
+              <span *ngIf="bloqueActivo.key === 'MIXTO'" class="material-symbols-outlined text-amber-400">transgender</span>
+              <h3 [class]="bloqueActivo.key === 'FEMENINO' ? 'text-pink-300' : bloqueActivo.key === 'MASCULINO' ? 'text-blue-300' : 'text-amber-300'"
+                class="text-xs font-black uppercase tracking-widest">{{ bloqueActivo.titulo }}</h3>
+            </div>
+            <span
+              [class]="bloqueActivo.key === 'FEMENINO' ? 'bg-pink-500/10 border-pink-500/20 text-pink-300' : bloqueActivo.key === 'MASCULINO' ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-amber-500/10 border-amber-500/20 text-amber-300'"
+              class="text-[10px] border px-2.5 py-0.5 rounded-full font-black tracking-wider uppercase">
+              {{ bloqueActivo.equipos.length }} Club/es
+            </span>
+          </header>
+
+          <div *ngIf="bloqueActivo.equipos.length === 0"
+            class="py-10 text-center text-[11px] text-gray-500 border border-dashed border-white/5 rounded-xl">
+            {{ bloqueActivo.vacio }}
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <button *ngFor="let eq of bloqueActivo.equipos" (click)="abrirEquipo(eq)" type="button"
+              class="text-left p-4 rounded-xl bg-white/2 border border-white/5 hover:border-forja-naranja/60 hover:bg-white/[0.04] hover:scale-[1.01] transition-all shadow-inner space-y-2 cursor-pointer group">
+              <div class="flex justify-between items-start gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span *ngIf="bloqueActivo.key === 'FEMENINO'"
+                      class="material-symbols-outlined text-pink-400 text-base">shield</span>
+                    <span *ngIf="bloqueActivo.key === 'MASCULINO'"
+                      class="material-symbols-outlined text-blue-400 text-base">shield</span>
+                    <span *ngIf="bloqueActivo.key === 'MIXTO'"
+                      class="material-symbols-outlined text-amber-400 text-base">shield</span>
+                    <h4 class="text-xs font-black text-white uppercase tracking-wide truncate">{{ eq.nombreEquipo }}</h4>
+                    <span *ngIf="eq.siglas"
+                      class="text-[9px] font-black text-forja-ocre uppercase tracking-wider">{{ eq.siglas }}</span>
+                  </div>
+                  <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[12px] align-middle text-forja-naranja">emoji_events</span>
+                    {{ eq.disciplina }} · {{ eq.tipoDisciplina === 'ADAPTADO' ? 'Deporte Adaptado' : 'Convencional' }}
+                  </p>
+                  <p class="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wider truncate">
+                    <span class="material-symbols-outlined text-[12px] align-middle">location_city</span>
+                    {{ eq.localidadNombre || eq.municipio }}
+                  </p>
+                  <p class="text-[10px] text-gray-500 mt-0.5 truncate">
+                    Resp.: <span class="text-gray-300 font-bold">{{ eq.representante }}</span>
+                    <span *ngIf="eq.dniRepresentante" class="font-mono text-gray-500"> · DNI {{ eq.dniRepresentante }}</span>
+                  </p>
+                  <p *ngIf="eq.usernameRepresentante" class="text-[10px] text-gray-600 truncate font-mono">
+                    @{{ eq.usernameRepresentante }}
+                  </p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Atletas</p>
+                  <p class="text-base font-black text-white leading-tight">{{ eq.totalAtletas }}</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-2 text-[10px] text-gray-500 pt-2 border-t border-white/5">
+                <span *ngIf="eq.atletasFemeninos > 0"
+                  class="px-2 py-0.5 bg-pink-500/10 border border-pink-500/20 text-pink-300 rounded font-bold uppercase tracking-wider">
+                  {{ eq.atletasFemeninos }} F
+                </span>
+                <span *ngIf="eq.atletasMasculinos > 0"
+                  class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-300 rounded font-bold uppercase tracking-wider">
+                  {{ eq.atletasMasculinos }} M
+                </span>
+                <span *ngIf="eq.atletasMixtos > 0"
+                  class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded font-bold uppercase tracking-wider">
+                  {{ eq.atletasMixtos }} Mix
+                </span>
+                <span *ngIf="eq.atletasPendientes > 0"
+                  class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded font-bold uppercase tracking-wider">
+                  {{ eq.atletasPendientes }} Pend.
+                </span>
+                <span *ngIf="eq.atletasAprobados > 0"
+                  class="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-400 rounded font-bold uppercase tracking-wider">
+                  {{ eq.atletasAprobados }} Apr.
+                </span>
+                <span *ngIf="eq.atletasRechazados > 0"
+                  class="px-2 py-0.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded font-bold uppercase tracking-wider">
+                  {{ eq.atletasRechazados }} Rech.
+                </span>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] font-black uppercase tracking-wider text-forja-ocre">
+                <span class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs">visibility</span>
+                  Ver detalle del club
+                </span>
+                <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+  </div>
+
+  <!-- MODAL: DETALLE COMPLETO DEL EQUIPO -->
+  <div *ngIf="mostrarModalEquipo"
+    class="fixed inset-0 bg-forja-dark-bg/90 backdrop-blur-md z-100 flex items-center justify-center p-4 animate-fade-in">
+    <div
+      class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-180 p-6 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto relative">
+
+      <header class="flex justify-between items-start border-b border-white/5 pb-3">
+        <div class="flex items-start gap-3">
+          <div
+            class="h-11 w-11 rounded-xl bg-linear-to-br from-forja-naranja to-orange-600 flex items-center justify-center text-white shadow-lg shadow-forja-naranja/20 shrink-0">
+            <span class="material-symbols-outlined text-xl">shield</span>
+          </div>
+          <div>
+            <span class="text-[9px] font-black text-forja-ocre uppercase tracking-widest">Club · {{
+              disciplinaSeleccionada?.nombre }}</span>
+            <h3 class="text-base font-black text-white uppercase tracking-wide mt-0.5 flex items-center gap-2">
+              {{ equipoSeleccionado?.nombreEquipo }}
+              <span *ngIf="equipoSeleccionado?.siglas"
+                class="text-[9px] font-black text-forja-ocre uppercase tracking-wider bg-forja-ocre/5 border border-forja-ocre/20 px-2 py-0.5 rounded-full">{{ equipoSeleccionado.siglas }}</span>
+            </h3>
+            <p class="text-[11px] text-gray-400 mt-0.5 uppercase tracking-wider flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs">location_city</span>
+              {{ equipoSeleccionado?.localidadNombre || equipoSeleccionado?.municipio }}
+            </p>
+            <p class="text-[10px] text-gray-500 mt-0.5">
+              Resp.: <span class="text-gray-300 font-bold">{{ equipoSeleccionado?.representante }}</span>
+              <span *ngIf="equipoSeleccionado?.dniRepresentante" class="font-mono text-gray-500"> · DNI {{
+                equipoSeleccionado?.dniRepresentante }}</span>
+            </p>
+            <p *ngIf="equipoSeleccionado?.usernameRepresentante" class="text-[10px] text-gray-600 mt-0.5 font-mono">
+              @{{ equipoSeleccionado?.usernameRepresentante }}
+            </p>
+          </div>
+        </div>
+        <button (click)="cerrarEquipo()" type="button"
+          class="text-gray-500 hover:text-white transition-colors cursor-pointer p-1 shrink-0">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </header>
+
+      <div class="flex flex-wrap items-center gap-2 text-[10px] text-gray-500">
+        <span class="px-2.5 py-1 bg-white/[0.02] border border-white/5 rounded font-bold uppercase">
+          Total: {{ equipoSeleccionado?.totalAtletas }}
+        </span>
+        <span *ngIf="equipoSeleccionado?.atletasFemeninos > 0"
+          class="px-2.5 py-1 bg-pink-500/10 border border-pink-500/20 text-pink-300 rounded font-bold uppercase tracking-wider">
+          {{ equipoSeleccionado.atletasFemeninos }} F
+        </span>
+        <span *ngIf="equipoSeleccionado?.atletasMasculinos > 0"
+          class="px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-300 rounded font-bold uppercase tracking-wider">
+          {{ equipoSeleccionado.atletasMasculinos }} M
+        </span>
+        <span *ngIf="equipoSeleccionado?.atletasMixtos > 0"
+          class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded font-bold uppercase tracking-wider">
+          {{ equipoSeleccionado.atletasMixtos }} Mix
+        </span>
+        <span *ngIf="equipoSeleccionado?.atletasPendientes > 0"
+          class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded font-bold uppercase tracking-wider">
+          {{ equipoSeleccionado.atletasPendientes }} Pend.
+        </span>
+        <span *ngIf="equipoSeleccionado?.atletasAprobados > 0"
+          class="px-2.5 py-1 bg-green-500/10 border border-green-500/20 text-green-400 rounded font-bold uppercase tracking-wider">
+          {{ equipoSeleccionado.atletasAprobados }} Apr.
+        </span>
+        <span *ngIf="equipoSeleccionado?.atletasRechazados > 0"
+          class="px-2.5 py-1 bg-red-500/10 border border-red-500/20 text-red-400 rounded font-bold uppercase tracking-wider">
+          {{ equipoSeleccionado.atletasRechazados }} Rech.
+        </span>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between border-b border-white/5 pb-2">
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-xs">groups</span> Nómina de Atletas ({{
+            equipoSeleccionado?.atletas?.length || 0 }})
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <div *ngFor="let atleta of equipoSeleccionado?.atletas"
+            class="flex justify-between items-center gap-3 px-4 py-3 rounded-xl bg-black/20 border border-white/5">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div
+                class="h-9 w-9 rounded-lg bg-forja-naranja/10 border border-forja-naranja/20 flex items-center justify-center text-forja-naranja font-black text-[11px] uppercase shrink-0">
+                {{ atleta.nombre?.[0] }}{{ atleta.apellido?.[0] }}
+              </div>
+              <div class="min-w-0">
+                <p class="text-[12px] font-black text-white uppercase tracking-wide truncate">{{ atleta.apellido }},
+                  {{ atleta.nombre }}</p>
+                <p class="text-[10px] text-gray-500 truncate">
+                  DNI {{ atleta.dni }} · <span class="text-gray-400">{{ atleta.prueba?.nombrePrueba }}</span>
+                </p>
+                <div *ngIf="atleta.pruebasAdicionales?.length > 0" class="flex flex-wrap items-center gap-1 mt-1">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-gray-600">Extras:</span>
+                  <span *ngFor="let extra of atleta.pruebasAdicionales"
+                    class="text-[8px] font-bold text-forja-ocre uppercase tracking-wider bg-forja-ocre/5 border border-forja-ocre/15 px-1.5 py-0.5 rounded-full">
+                    {{ extra.prueba?.nombrePrueba }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span
+                [class]="atleta.estado === 'APROBADO' ? 'bg-green-500/10 text-green-400 border-green-500/20' : atleta.estado === 'RECHAZADO' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'"
+                class="px-2 py-0.5 rounded-full text-[8px] font-black tracking-widest uppercase border">
+                {{ atleta.estado || 'PENDIENTE' }}
+              </span>
+              <button (click)="abrirDictamen(atleta)" type="button"
+                class="px-3 py-1.5 bg-forja-naranja/10 hover:bg-forja-naranja text-forja-naranja hover:text-white border border-forja-naranja/30 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer">
+                Evaluar
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="equipoSeleccionado?.atletas?.length === 0"
+            class="py-8 text-center text-[10px] text-gray-500 border border-dashed border-white/5 rounded-xl">
+            Este equipo aún no tiene atletas cargados.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DICTAMEN DE ATLETA -->
+  <div *ngIf="mostrarModalDictamen"
+    class="fixed inset-0 bg-forja-dark-bg/90 backdrop-blur-md z-200 flex items-center justify-center p-4 animate-fade-in">
+    <div
+      class="bg-forja-dark-card border border-white/10 rounded-2xl w-full max-w-120 p-6 space-y-6 shadow-2xl overflow-hidden relative">
+      <header class="flex justify-between items-start border-b border-white/5 pb-3">
+        <div>
+          <span class="text-[9px] font-black text-forja-naranja uppercase tracking-widest">Dictamen Ministerial
+            Central</span>
+          <h3 class="text-md font-black text-white uppercase tracking-wide mt-0.5">{{ atletaSeleccionado?.apellido }},
+            {{ atletaSeleccionado?.nombre }}</h3>
+          <p class="text-[11px] text-gray-400 mt-0.5 font-mono">Documento único: {{ atletaSeleccionado?.dni }}</p>
+        </div>
+        <button (click)="cerrarDictamen()" type="button"
+          class="text-gray-500 hover:text-white transition-colors cursor-pointer p-1">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </header>
+
+      <div class="space-y-3">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Auditar Documentación en Nueva Pestaña
+        </p>
+        <div class="grid grid-cols-1 gap-2.5">
+          <a *ngIf="atletaSeleccionado?.urlDniFrente" [href]="atletaSeleccionado.urlDniFrente" target="_blank"
+            class="w-full px-4 py-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-forja-naranja rounded-xl text-xs text-gray-200 hover:text-white font-bold transition-all flex items-center justify-between group shadow-inner">
+            <span class="flex items-center gap-2"><span
+                class="material-symbols-outlined text-forja-naranja text-md">badge</span><span>DNI - Certificado
+                Frente</span></span>
+            <span
+              class="material-symbols-outlined text-xs text-gray-500 group-hover:text-white transition-colors">open_in_new</span>
+          </a>
+          <a *ngIf="atletaSeleccionado?.urlDniDorso" [href]="atletaSeleccionado.urlDniDorso" target="_blank"
+            class="w-full px-4 py-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-forja-naranja rounded-xl text-xs text-gray-200 hover:text-white font-bold transition-all flex items-center justify-between group shadow-inner">
+            <span class="flex items-center gap-2"><span
+                class="material-symbols-outlined text-forja-naranja text-md">badge</span><span>DNI - Certificado
+                Reverso</span></span>
+            <span
+              class="material-symbols-outlined text-xs text-gray-500 group-hover:text-white transition-colors">open_in_new</span>
+          </a>
+          <a *ngIf="atletaSeleccionado?.urlFichaMedica" [href]="atletaSeleccionado.urlFichaMedica" target="_blank"
+            class="w-full px-4 py-3 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500 rounded-xl text-xs text-emerald-400 hover:text-emerald-300 font-bold transition-all flex items-center justify-between group shadow-inner">
+            <span class="flex items-center gap-2"><span
+                class="material-symbols-outlined text-emerald-400 text-md">medical_services</span><span>Ficha Médica
+                Colectiva (PDF)</span></span>
+            <span
+              class="material-symbols-outlined text-xs text-emerald-500 group-hover:text-emerald-300 transition-colors">open_in_new</span>
+          </a>
+          <a *ngIf="atletaSeleccionado?.urlCud" [href]="atletaSeleccionado.urlCud" target="_blank"
+            class="w-full px-4 py-3 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 hover:border-forja-ocre rounded-xl text-xs text-forja-ocre hover:text-amber-300 font-bold transition-all flex items-center justify-between group shadow-inner">
+            <span class="flex items-center gap-2"><span
+                class="material-symbols-outlined text-forja-ocre text-md">accessibility_new</span><span>Certificado de
+                Discapacidad (CUD)</span></span>
+            <span
+              class="material-symbols-outlined text-xs text-amber-500 group-hover:text-amber-300 transition-colors">open_in_new</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-slate-950/40 border border-white/5 p-3 rounded-xl flex justify-between items-center text-xs">
+        <span class="text-gray-500 font-bold uppercase tracking-wider text-[10px]">Estado Habilitación:</span>
+        <span
+          [class]="atletaSeleccionado?.estado === 'APROBADO' ? 'text-green-400' : atletaSeleccionado?.estado === 'RECHAZADO' ? 'text-red-400' : 'text-amber-400'"
+          class="font-black uppercase tracking-widest">{{ atletaSeleccionado?.estado || 'PENDIENTE' }}</span>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          Motivo de Rechazo <span class="text-xs font-normal text-gray-500 lowercase">(Solo si dictamina
+            desfavorable)</span>
+        </label>
+        <textarea [(ngModel)]="motivoRechazoInput" rows="2"
+          class="w-full px-4 py-2 bg-forja-dark-input border border-white/10 focus:border-red-500/50 rounded-xl text-xs text-white outline-none resize-none placeholder-gray-600"
+          placeholder="Ej: La ficha médica es ilegible o le falta la firma del médico..."></textarea>
+      </div>
+
+      <footer class="flex items-center gap-3 border-t border-white/5 pt-4">
+        <button [disabled]="procesandoDictamen" (click)="ejecutarDictamen('RECHAZADO')" type="button"
+          class="flex-1 py-3 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">RECHAZAR</button>
+        <button [disabled]="procesandoDictamen" (click)="ejecutarDictamen('APROBADO')" type="button"
+          class="flex-1 py-3 bg-linear-to-r from-green-600 to-emerald-700 hover:from-green-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider shadow-lg transition-all cursor-pointer shadow-green-950/20">HABILITAR
+          ATLETA</button>
+      </footer>
+    </div>
+  </div>
+</div>
