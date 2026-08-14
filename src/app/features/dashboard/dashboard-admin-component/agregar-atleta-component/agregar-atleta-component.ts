@@ -224,18 +224,6 @@ export class AgregarAtletaComponent implements OnInit {
       this.atletaForm.markAllAsTouched();
       return;
     }
-    if (!this.archivos['dniFrente'] || !this.archivos['dniDorso'] || !this.archivos['fichaMedica']) {
-      toast.warning('Falta documentación', {
-        description: 'DNI frente/dorso y ficha médica son obligatorios.',
-      });
-      return;
-    }
-    if (this.requiereCud && !this.archivos['cud']) {
-      toast.warning('Falta CUD', {
-        description: 'Esta disciplina requiere el Certificado Único de Discapacidad.',
-      });
-      return;
-    }
 
     this.procesando = true;
 
